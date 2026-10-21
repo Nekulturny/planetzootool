@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Build dist/zoopedia-finder.html: src/template.html with all data embedded.
+"""Build dist/zoopedia-finder.html and index.html: src/template.html with all data embedded.
 
 Merges data/animals.json (Zoopedia), data/wiki.json (wikily.gg release groups and
 ecosystems) and data/career_tiers.json into one DATA object, and replaces the
 /*__DATA__*/ placeholder in the template with it.
+
+Writes the same page twice (rule spec §8a):
+  dist/zoopedia-finder.html  for the claude.ai artifact, whose host adds <html><head><body>
+  index.html                 a complete document for GitHub Pages and for opening from disk
 
 Usage: python3 scripts/build.py
 """
@@ -12,6 +16,11 @@ import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+# CR-002: the document the claude.ai host would otherwise supply, for index.html
+STANDALONE_HEAD = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+                   '<meta name="viewport" content="width=device-width, initial-scale=1">\n</head>\n<body>\n')
+STANDALONE_TAIL = "\n</body>\n</html>\n"
 
 
 def load(rel):
@@ -57,10 +66,14 @@ def main():
     template = (ROOT / "src/template.html").read_text(encoding="utf-8")
     assert template.count("/*__DATA__*/") == 1, "template must contain exactly one /*__DATA__*/ placeholder"
 
+    page = template.replace("/*__DATA__*/", data)
     out = ROOT / "dist/zoopedia-finder.html"
     out.parent.mkdir(exist_ok=True)
-    out.write_text(template.replace("/*__DATA__*/", data), encoding="utf-8")
+    out.write_text(page, encoding="utf-8")
     print(f"wrote {out.relative_to(ROOT)} ({out.stat().st_size:,} bytes, {len(D['animals'])} species)")
+    site = ROOT / "index.html"
+    site.write_text(STANDALONE_HEAD + page + STANDALONE_TAIL, encoding="utf-8")
+    print(f"wrote {site.relative_to(ROOT)} ({site.stat().st_size:,} bytes, standalone page)")
 
 
 if __name__ == "__main__":

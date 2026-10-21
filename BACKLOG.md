@@ -44,8 +44,11 @@ approved work: new features need Paul's yes first.
     message. Harmless for files this page wrote.
 11. Plan import does not check `version`. Correct while only version 1 exists; it must once a
     version 2 does.
+12. `build.py` writes with `Path.write_text`, which turns line endings into CRLF on Windows: a
+    build there would differ from the committed LF files. Pass `newline="\n"` if the build is
+    ever run on Windows.
 
 ## Ideas (not requested)
 
-12. Put the page's R-version into exported plans as an extra field (import ignores unknown
+13. Put the page's R-version into exported plans as an extra field (import ignores unknown
     fields, so it would stay `version: 1`), so a plan can be traced to the build that wrote it.

@@ -36,7 +36,7 @@ test("page loads without script errors", () => assert.deepEqual(errors, []));
 
 // CR-001: version label in the masthead (rule spec §0a)
 test("masthead shows the version, species count and export date", () =>
-  assert.equal(text("bandMeta"), "R1.0.1 · 136 species · data export 5 Oct 2026"));
+  assert.equal(text("bandMeta"), "R1.0.2 · 136 species · data export 5 Oct 2026"));
 
 test("species tab shows all 136 species", () => assert.match(text("count"), /^136 of 136 species/));
 
@@ -131,6 +131,43 @@ test("every reserve renders at every tier in both modes", () => {
     }
   }
   assert.deepEqual(errors, []);
+});
+
+// CR-002: standalone build for the public site and for opening from disk (rule spec §8a).
+// Loaded exactly as a browser gets it from GitHub Pages: no wrapper added here.
+const site = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+const siteErrors = [];
+const svc = new VirtualConsole();
+svc.on("jsdomError", e => siteErrors.push(e.message));
+const sw = new JSDOM(site, { runScripts: "dangerously", pretendToBeVisual: true, virtualConsole: svc, url: "https://example.test/" }).window;
+const sd = sw.document;
+const shown = id => sw.getComputedStyle(sd.getElementById(id)).display !== "none";
+
+test("standalone page wraps the same page as the artifact build", () => {
+  assert.match(site, /^<!doctype html>\n/);
+  assert.equal(site.slice(site.indexOf("<body>\n") + 7, site.lastIndexOf("\n</body>")), html);
+});
+
+test("standalone page is a complete document: standards mode, UTF-8, phone viewport", () => {
+  assert.equal(sd.compatMode, "CSS1Compat");
+  assert.equal(sd.documentElement.lang, "en");
+  assert.equal(sd.querySelector("head meta[charset]").getAttribute("charset"), "utf-8");
+  assert.equal(sd.querySelector('head meta[name="viewport"]').getAttribute("content"), "width=device-width, initial-scale=1");
+});
+
+test("standalone page loads without script errors and shows the version", () => {
+  assert.deepEqual(siteErrors, []);
+  assert.equal(sd.getElementById("bandMeta").textContent, "R1.0.2 · 136 species · data export 5 Oct 2026");
+});
+
+test("standalone page shows only the open tab; hidden panels stay hidden", () => {
+  assert.ok(shown("speciesView"));
+  assert.ok(!shown("reserveView"));
+  assert.ok(!shown("rvIO"));
+  sd.getElementById("tabReserves").dispatchEvent(new sw.MouseEvent("click", { bubbles: true }));
+  assert.ok(!shown("speciesView"));
+  assert.ok(shown("reserveView"));
+  assert.ok(!shown("rvIO"));
 });
 
 console.log(`\n${passed} tests passed`);

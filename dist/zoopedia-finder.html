@@ -54,6 +54,7 @@
 
 * { box-sizing: border-box; }
 body {
+  margin: 0; /* CR-002: the claude.ai host's wrapper used to supply this */
   background-color: var(--bg);
   background-image:
     radial-gradient(circle at 20% 30%, var(--bg-deco) 0 18px, transparent 19px),
@@ -317,6 +318,10 @@ details.done-list[open] > summary { margin-bottom: 8px; }
   .d-head h2 { font-size: 27px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* CR-002: the claude.ai host's wrapper used to supply this. Without it, the display rules above
+   (.layout, .rv, .rv-io) override the hidden attribute: both tabs show at once. Kept last so it
+   also wins in engines that ignore !important (jsdom). */
+[hidden] { display: none !important; }
 </style>
 
 <div class="band"><div class="band-inner gutter">
@@ -1138,7 +1143,7 @@ document.addEventListener("click", e => {
 });
 
 /* meta */
-const VERSION = "R1.0.1"; // CR-001: version label in the masthead; bump with every release
+const VERSION = "R1.0.2"; // CR-001: version label in the masthead; bump with every release
 const exp = new Date(DATA.exported);
 const lastReveal = A.map(a => a.reveal).sort().pop();
 const dfmt = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });

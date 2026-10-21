@@ -1,7 +1,8 @@
 # Zoopedia Finder — Rule Specification
 
-**Version:** 1.1 — 21 Oct 2026. v1.1 adds §0a, the version label in the masthead (R1.0.1,
-CR-001).
+**Version:** 1.2 — 21 Oct 2026. v1.2 adds §8a, the standalone page and the public site (R1.0.2,
+CR-002).
+1.1 — 21 Oct 2026. v1.1 adds §0a, the version label in the masthead (R1.0.1, CR-001).
 1.0 — 21 Oct 2026. Written from the R1.0.0 source (`src/template.html`,
 `scripts/build.py`) and the Claude Chat handover of 21 Oct 2026, when the project moved into
 Git. It records the rules as built; no rule was changed in writing it. Statements about the
@@ -27,9 +28,9 @@ its official Zoopedia page.
 ## 0a. Version label (R1.0.1, CR-001)
 
 The masthead band shows the page's version first, then the species count and the export date
-of the Zoopedia data:
+of the Zoopedia data, for example:
 
-`R1.0.1 · 136 species · data export 5 Oct 2026`
+`R1.0.2 · 136 species · data export 5 Oct 2026`
 
 The version comes from one constant, `VERSION`, in `src/template.html`; bump it with every
 release. Display only: no rule, filter or saved state reads it, and the plan file does not carry
@@ -284,8 +285,38 @@ is wrapped so the page works without storage.
   `alert()` / `confirm()` and `window.print()` do not work.
 - The page loads no scripts at all. Its only external resource is Google Fonts (Lilita One,
   Barlow, Barlow Condensed), each with a fallback stack.
-- Hosted anywhere else, `window.claude` does not exist: the Save button stays hidden and
-  everything else works.
+- Hosted anywhere else, `window.claude` does not exist: the Save button stays hidden. Copy as
+  text works. Everything else works only in the standalone build (§8a).
+
+### 8a. Standalone page and public site (R1.0.2, CR-002)
+
+Up to R1.0.1 the page relied on the claude.ai host's wrapper without saying so. Opened from
+disk or served by any other host (checked in Chromium, 21 Oct 2026), it:
+
+- showed **both tabs at once** and an empty import/export box: the page's own `display` rules
+  for `#speciesView`, `#reserveView` and `#rvIO` override the browser's default for the
+  `hidden` attribute, and only the host's base CSS forced `[hidden]` back to `display: none`;
+- rendered in quirks mode (no doctype) with an 8 px body margin;
+- laid out at 980 px on a phone, zoomed out (no viewport meta).
+
+Rules from R1.0.2:
+
+1. The page declares what it relied on, in its own CSS: `[hidden] { display: none !important; }`
+   and `body { margin: 0; }`. Inside claude.ai these repeat the host's rules, so nothing changes
+   there.
+2. The build writes **two files** from the same template and data. The page between the
+   wrappers is byte-identical in both.
+
+| File | For | Wrapper |
+|---|---|---|
+| `dist/zoopedia-finder.html` | the claude.ai artifact | none: the host adds it |
+| `index.html` (repo root) | the public site, and the file to give anyone | `<!doctype html>`, `<html lang="en">`, a head with `<meta charset="utf-8">` and `<meta name="viewport" content="width=device-width, initial-scale=1">`, then the page inside `<body>`, where the host also puts it |
+
+3. **Public site:** GitHub Pages serves `main` from the repository root at
+   https://nekulturny.github.io/planetzootool/. `.nojekyll` makes Pages publish the files as
+   they are, without a Jekyll build. **Pushing `main` publishes the site.**
+4. On the public site and from disk there is no **Save plan file** button (no `downloads`
+   capability); **Copy as text** and import work (§6).
 
 ## 9. Data refresh
 
@@ -306,14 +337,20 @@ refresh, and say in the change log which numbers moved and why.
 
 ## 10. Verification
 
-`npm test` builds the page and runs `tests/smoke.test.js` in jsdom: 13 tests that drive the UI
-and check known results from the current data — the masthead version label (§0a); 136
+`npm test` builds both files and runs `tests/smoke.test.js` in jsdom: 17 tests. Thirteen drive
+the artifact build and check known results from the current data — the masthead version label
+(§0a); 136
 species; 42 walk-through; 11 thriving
 partners for Blue Wildebeest; 65 species at Franchise Tier 2 (71 hidden) and 126 at Tier 4;
 Career Tier 1 includes Lion and not Black Wildebeest; Great Rift Valley starts at 19 ready /
 8 waiting with the Lion waiting until Blue Wildebeest, Black Rhinoceros and Secretarybird are
 released; African Leopard needs Tier 4 at Franchise Tier 3; plan export/import round trip; and
-every reserve renders at every tier in both modes without script errors.
+every reserve renders at every tier in both modes without script errors. Four load
+`index.html` exactly as a browser receives it (§8a): it wraps the artifact build byte for byte;
+it is a standards-mode UTF-8 document with the phone viewport; it loads without errors; and only
+the open tab shows, before and after switching tabs. jsdom ignores `!important` and lets the
+later rule win, so the `[hidden]` rule sits last in the stylesheet; real browsers were checked
+separately in Chromium.
 
 The expected values were taken from the page itself in the original session. They are
 regression values, not independent proofs of the planner rules; a pure-logic suite with
@@ -343,3 +380,4 @@ Published artifact versions, all now **R1.0.0**:
 |---|---|
 | R1.0.0 | 21 Oct 2026. Baseline = published artifact version 9, imported unchanged (tag `archive/claude-chat-handover`). Verified in this repo: `npm run build` reproduces `dist/zoopedia-finder.html` byte for byte, the file equals the live artifact apart from the host's wrapper, and the 12 smoke tests pass. No version label in the page yet. |
 | R1.0.1 | 21 Oct 2026, **CR-001**. Version label in the masthead (§0a): the band reads `R1.0.1 · 136 species · data export 5 Oct 2026`, from a single `VERSION` constant. Display only; no rule, data or saved state changes. Smoke suite 12 → 13 tests. Approved by Paul and **released 21 Oct 2026 as artifact version 10**; the live page equals `dist/zoopedia-finder.html` apart from the host's wrapper (checked after publishing). |
+| R1.0.2 | 21 Oct 2026, **CR-002**. Fix: the page works outside claude.ai (§8a). Up to R1.0.1, opened from disk or served elsewhere it showed both tabs at once and an empty import/export box, ran in quirks mode and laid out at 980 px on phones, because it relied on the claude.ai wrapper. The page now carries `[hidden] { display: none !important; }` and `body { margin: 0; }` itself, and the build also writes `index.html`, a complete document, for the public GitHub Pages site (https://nekulturny.github.io/planetzootool/) and for sharing as a file. No rule, data or saved-state change; no visible change inside claude.ai. Tests 13 → 17; the hidden-panel test was seen failing before the CSS fix. Chromium check at 1280 px and 390 px, before (defect reproduced) and after. |

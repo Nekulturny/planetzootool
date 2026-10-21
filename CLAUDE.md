@@ -25,22 +25,26 @@ Owner: Paul de Graaff. Built in a Claude Chat session 19–21 Oct 2026, moved in
 
 | Tool | Status |
 |---|---|
-| Zoopedia Finder R1.0.1 | **Released 21 Oct 2026**: published artifact https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM, version 10 (R1.0.0 = version 9); `main` equals it byte for byte (host wrapper aside, checked after publishing). R1.0.1 = CR-001, version label in the masthead, display only (rule spec §0a). 13-test jsdom smoke suite, passing. Rule spec `docs/Zoopedia_Finder_Rules.md` v1.1. EN only. |
+| Zoopedia Finder R1.0.2 | **R1.0.1 released 21 Oct 2026** as artifact https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM version 10 (R1.0.0 = version 9; R1.0.1 = CR-001, version label in the masthead). **R1.0.2 (CR-002) built**: the page works outside claude.ai, and the build also writes `index.html` for the public site https://nekulturny.github.io/planetzootool/ (rule spec §8a). 17-test jsdom suite, passing. Rule spec `docs/Zoopedia_Finder_Rules.md` v1.2. EN only. |
 
-Highest CR: **CR-001**.
+Highest CR: **CR-002**.
 
 ---
 
 ## Non-negotiable architecture
 
-1. **One deliverable = one self-contained HTML file**, `dist/zoopedia-finder.html`. It is built
-   from `src/template.html` plus `data/*.json` by `scripts/build.py` (Python 3, standard library
-   only). The build only inlines the data: no bundler, no runtime dependencies, no scripts from
-   anywhere. Google Fonts is the only external resource, each font with a fallback stack.
-   **Never hand-edit `dist/`**: change the template or the data, rebuild, commit both.
+1. **One deliverable = one self-contained HTML page**, built from `src/template.html` plus
+   `data/*.json` by `scripts/build.py` (Python 3, standard library only) into two files with the
+   same page inside (rule spec §8a): `dist/zoopedia-finder.html` for the claude.ai artifact, and
+   `index.html`, a complete document, for the public site and for sharing as a file. The build
+   only inlines the data: no bundler, no runtime dependencies, no scripts from anywhere. Google
+   Fonts is the only external resource, each font with a fallback stack. **Never hand-edit
+   `dist/` or `index.html`**: change the template or the data, rebuild, commit all of them.
 
-2. **Everything runs client-side.** No fetch to any endpoint. The page must work both as a
-   claude.ai artifact (host wrapper and CSP: rule spec §8) and opened from disk.
+2. **Everything runs client-side.** No fetch to any endpoint. The page must work as a claude.ai
+   artifact (host wrapper and CSP: rule spec §8), on the public site and opened from disk. Check
+   a layout or CSS change in a real browser outside claude.ai too: the page once leaned on the
+   host's CSS without anyone noticing (CR-002).
 
 3. **The rule spec is written or updated before the code.** `docs/Zoopedia_Finder_Rules.md`
    holds every rule the page applies, the data schema, the plan-file format and the change log.
@@ -58,16 +62,19 @@ Highest CR: **CR-001**.
 
 ## Repository and GitHub
 
-- Remote: `origin` = `github.com/Nekulturny/planetzootool` (private, created by Paul
-  21 Oct 2026). `main` is the released state and always equals the published artifact.
-  Work on a branch; fast-forward into `main` when Paul approves.
+- Remote: `origin` = `github.com/Nekulturny/planetzootool`, created by Paul 21 Oct 2026 and
+  **public**: everything committed is visible to anyone, so no personal data and no references
+  to Paul's work. `main` is the released state: it equals the published artifact, and **pushing
+  `main` publishes the public site** (GitHub Pages from the repository root). Work on a branch;
+  fast-forward into `main` when Paul approves.
 - **Push only when Paul asks.** Never force-push, rewrite history or delete a remote ref
   without his explicit go-ahead for that specific action.
 - The handover as received is tagged `archive/claude-chat-handover`.
-- **Releasing = republishing the artifact**, and only after Paul approves the change. In a
-  Claude session with the Artifact tool: publish `dist/zoopedia-finder.html` with `url` set to
-  the artifact link above and keep `capabilities: {downloads: true}`. Record the new artifact
-  version in the rule spec change log.
+- **Releasing**, only after Paul approves the change, has two steps: push `main` (the public
+  site updates itself within a few minutes), and republish the artifact. In a Claude session
+  with the Artifact tool: publish `dist/zoopedia-finder.html` with `url` set to the artifact
+  link above and keep `capabilities: {downloads: true}`. Record the new artifact version in the
+  rule spec change log.
 
 ## Working with Paul
 
@@ -116,7 +123,9 @@ scripts/build.py           template + data -> dist/zoopedia-finder.html (validat
 scripts/decode_zoopedia.py packed export -> data/animals.json
 scripts/scrape/*.console.js     browser-console scrapers that refresh the data (rule spec §9)
 tests/smoke.test.js        jsdom smoke test that drives the UI and checks known results
-dist/zoopedia-finder.html  the built page (the deliverable)
+dist/zoopedia-finder.html  the built page for the claude.ai artifact
+index.html                 the same page as a complete document: public site and shareable file
+.nojekyll                  tells GitHub Pages to publish the files as they are
 docs/Zoopedia_Finder_Rules.md   rule specification and change log
 ```
 
@@ -124,8 +133,8 @@ docs/Zoopedia_Finder_Rules.md   rule specification and change log
 
 ```
 npm install          # jsdom 24.1.3, only needed for the tests (package-lock.json pins the tree)
-npm run build        # python3 scripts/build.py
-npm test             # build + tests/smoke.test.js (13 tests)
+npm run build        # python3 scripts/build.py (writes dist/zoopedia-finder.html and index.html)
+npm test             # build + tests/smoke.test.js (17 tests)
 ```
 
 Python 3 only, no packages. All file I/O is explicit UTF-8 (species names include
