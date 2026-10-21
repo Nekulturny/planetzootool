@@ -1,165 +1,174 @@
-# Zoopedia Finder — handover
+# Zoopedia Finder — Project Conventions
 
-A single-file HTML companion for **Planet Zoo 2**, built for Paul (the user) in a Claude chat session on 19–21 Oct 2026. It has two tabs:
+Read this fully before touching anything. The rules in short: docs first, CR-tagged changes,
+R-versions, a branch per change, `main` = released.
 
-- **Species**: all 136 Zoopedia species with search, filters, card and table views, and a detail drawer.
-- **Reserve planner**: for each of the six wildlife reserves, it shows which species can be released now, which are waiting on other animals, and what each one unlocks. Progress can be exported and imported as a plan file.
+---
+
+## What this project is
+
+A single-file HTML companion for **Planet Zoo 2** (an unofficial fan tool), built for Paul's
+own play in Franchise and Career mode. Two tabs:
+
+- **Species** — all 136 Zoopedia species with search, filters, card and table views and a
+  detail drawer.
+- **Reserve planner** — for each of the six wildlife reserves: which species can be released
+  now, which wait on other animals, and what each release unlocks. Progress is ticked by hand
+  and saved to a plan file.
 
 A shared **Accreditation** control (Franchise / Career plus "tier reached") filters both tabs.
 
-The current build is published as a private claude.ai artifact: https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM (version 9). `dist/zoopedia-finder.html` is byte-identical to it.
+Owner: Paul de Graaff. Built in a Claude Chat session 19–21 Oct 2026, moved into Git
+21 Oct 2026.
+
+## Tool inventory and status
+
+| Tool | Status |
+|---|---|
+| Zoopedia Finder R1.0.0 | Released: published artifact https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM, version 9. `dist/zoopedia-finder.html` equals it byte for byte (host wrapper aside, verified 21 Oct 2026). 12-test jsdom smoke suite, passing. Rule spec `docs/Zoopedia_Finder_Rules.md` v1.0. EN only. |
+
+Highest CR: none yet — the next change is **CR-001**.
+
+---
+
+## Non-negotiable architecture
+
+1. **One deliverable = one self-contained HTML file**, `dist/zoopedia-finder.html`. It is built
+   from `src/template.html` plus `data/*.json` by `scripts/build.py` (Python 3, standard library
+   only). The build only inlines the data: no bundler, no runtime dependencies, no scripts from
+   anywhere. Google Fonts is the only external resource, each font with a fallback stack.
+   **Never hand-edit `dist/`**: change the template or the data, rebuild, commit both.
+
+2. **Everything runs client-side.** No fetch to any endpoint. The page must work both as a
+   claude.ai artifact (host wrapper and CSP: rule spec §8) and opened from disk.
+
+3. **The rule spec is written or updated before the code.** `docs/Zoopedia_Finder_Rules.md`
+   holds every rule the page applies, the data schema, the plan-file format and the change log.
+
+4. **Game facts come from the data sources, never from memory.** The Zoopedia and wikily.gg
+   (rule spec §1) are the only sources. Paul plays both modes and catches inaccuracies quickly:
+   when a game fact is unsure, say so instead of guessing. `data/*.json` is scraper output
+   (rule spec §9); regenerate it, don't hand-edit it.
+
+5. **Saved state is a contract.** The plan file (`version: 1`, rule spec §6) and the
+   localStorage keys `zf-state` / `zf-rv` (§7) hold Paul's progress. Changing their shape is a
+   migration: a new plan `version`, and import keeps reading the old one.
+
+---
+
+## Repository and GitHub
+
+- Remote: `origin` = `github.com/Nekulturny/zoopedia-finder` (private) — **not yet created**,
+  see `BACKLOG.md`. `main` is the released state and always equals the published artifact.
+  Work on a branch; fast-forward into `main` when Paul approves.
+- **Push only when Paul asks.** Never force-push, rewrite history or delete a remote ref
+  without his explicit go-ahead for that specific action.
+- The handover as received is tagged `archive/claude-chat-handover`.
+- **Releasing = republishing the artifact**, and only after Paul approves the change. In a
+  Claude session with the Artifact tool: publish `dist/zoopedia-finder.html` with `url` set to
+  the artifact link above and keep `capabilities: {downloads: true}`. Record the new artifact
+  version in the rule spec change log.
 
 ## Working with Paul
 
-- Execution first. When the task is clear, do it and report the result. Don't turn it into a consultation and don't explain what you're about to do.
-- **Ask before going significantly beyond the requested scope.** He gave this feedback explicitly during the original session, after a whole reserve planner was added when he'd only asked for existing tools. Small fixes to defects you introduced are fine. New features need a yes first.
+- Execution first. When the task is clear, do it and report the result. Don't turn it into a
+  consultation and don't explain what you're about to do.
+- **Ask before going significantly beyond the requested scope.** He said so explicitly after
+  the reserve planner was added when he had only asked for existing tools. Small fixes to
+  defects you introduced are fine. New features need a yes first; ideas go into `BACKLOG.md`.
 - Be direct and concise, without filler. Flag real problems briefly.
-- He plays both Franchise and Career, and catches data inaccuracies quickly. When game facts are unsure, say so instead of guessing.
+- Accuracy over helpfulness. Never describe something as tested unless the tests ran in this
+  session. Report plainly: what changed, how it was verified, what is still open.
+
+## Change tracking and versions
+
+- Inline changes carry `CR-0xx` comments in the source (e.g. `// CR-001: version label`). Use
+  the next free number and note it in the rule spec change log (§11). Series starts at CR-001.
+- Versioning is `R<major>.<minor>.<patch>`: patch = fix or display-only change, minor = new
+  feature, major = a change that breaks saved plans or state. R1.0.0 = artifact version 9.
+- The version shows in the page masthead from CR-001 on. The filename stays
+  `dist/zoopedia-finder.html` (the artifact is republished in place from it, and Git holds the
+  history) unless Paul decides otherwise.
+
+---
+
+## Required workflow
+
+**Docs first, then build, then verify.** In that order, every time.
+
+1. Update the rule spec in `docs/` (rule, change-log row, CR number).
+2. Change `src/template.html` and/or the data, then `npm run build`.
+3. `npm test` — must pass before the work counts as done. A changed rule gets a new assertion
+   whose expected value comes from the spec or the game, not from running the code. When a data
+   refresh moves the hard-coded counts, update them and say which moved and why.
+
+Do not skip step 3 because the change looks small.
 
 ## Layout
 
 ```
 src/template.html          the page: HTML, CSS and JS in one file, with a /*__DATA__*/ placeholder
-data/animals.json          Zoopedia data, 136 species (decoded, readable schema below)
-data/wiki.json             wikily.gg data: release groups and requirements (104 species) and 32 ecosystems
+data/animals.json          Zoopedia data, 136 species (schema: rule spec §2)
+data/wiki.json             wikily.gg: release groups and requirements (104 species), 32 ecosystems
 data/career_tiers.json     {"Species name": Career accreditation tier 1-4}
 data/raw/zoopedia_packed.json   raw packed Zoopedia export (input to decode_zoopedia.py)
-scripts/build.py           template + data -> dist/zoopedia-finder.html (validates joins and fails loudly)
+scripts/build.py           template + data -> dist/zoopedia-finder.html (validates joins, fails loudly)
 scripts/decode_zoopedia.py packed export -> data/animals.json
-scripts/scrape/*.console.js     browser-console scrapers used to refresh the data (see Data refresh)
+scripts/scrape/*.console.js     browser-console scrapers that refresh the data (rule spec §9)
 tests/smoke.test.js        jsdom smoke test that drives the UI and checks known results
 dist/zoopedia-finder.html  the built page (the deliverable)
+docs/Zoopedia_Finder_Rules.md   rule specification and change log
 ```
 
 ## Build and test
 
 ```
-npm install          # jsdom, only needed for the tests
+npm install          # jsdom 24.1.3, only needed for the tests (package-lock.json pins the tree)
 npm run build        # python3 scripts/build.py
-npm test             # build + tests/smoke.test.js (12 checks)
+npm test             # build + tests/smoke.test.js (12 tests)
 ```
 
-Python 3 only, no packages. All file I/O is explicit UTF-8 (species names include "Galápagos"). The tests hard-code numbers from the current data, for example 19 species ready in Great Rift Valley and 65 species at Franchise Tier 2. Update them when the data is refreshed.
+Python 3 only, no packages. All file I/O is explicit UTF-8 (species names include
+"Galápagos"). The tests hard-code numbers from the current data, for example 19 species ready
+in Great Rift Valley and 65 species at Franchise Tier 2.
 
-## How the page works
+## Code map (`src/template.html`)
 
-Everything lives in `src/template.html`. There are no frameworks and no external scripts. The only external resource is Google Fonts (Lilita One, Barlow, Barlow Condensed), each with a fallback stack. `DATA = {animals, exported, eco}` is inlined by the build.
+- **Species tab:** `st` is the filter state (`fresh()` gives the defaults, `SETS` lists the chip
+  groups), saved to `zf-state`. `matches(a)` applies every filter including the tier cap;
+  `render()` draws the count, active-filter chips and the cards or table; `syncControls()`
+  mirrors state into the controls. `REL[i][j]` holds the relationships. `openDetail(i)` opens
+  the drawer.
+- **Accreditation:** `tierMode`, `tierCap`, `tierOf(a)`; `setTier()` / `syncTier()`.
+- **Planner:** `RESERVES`, `ecoSlug()`, `parseReq()`, `evaluate()`, `wavesFor()` (cached on the
+  plan per mode and tier), `PLAN[reserveId]`. `rv` (view, reserve, released, tier, mode) is
+  saved to `zf-rv`. `renderReserves()` draws the tab.
+- **Plan file:** `planText()`, `parsePlan()`, `renderIO()`, `ioAction()`.
 
-### Species tab
-- `st`: the filter state, saved to localStorage `zf-state`. `SETS` holds the chip filters. `fresh()` gives the defaults.
-- `matches(a)` applies every filter, including the tier cap. `render()` draws the count, active-filter chips, and the cards or table. `syncControls()` mirrors state into the controls.
-- `REL[i][j]` is `"T"` (thriving) or `"N"` (neutral). Thriving overrides neutral, and the data is symmetric. "Shares a habitat with" means a species must get along with every picked species.
-- `openDetail(i)` opens the drawer. It also shows release groups and requirements, and has "Plan in <reserve>" buttons.
+## House style
 
-### Reserve planner
-- `RESERVES`: six reserves with id, name and biome. The reserve each species belongs to comes from the Zoopedia (`a.wild.reserves`).
-- `parseReq(a, res)` turns the wikily requirement rows into:
-  - clauses, where each clause is a list of options and any option satisfies it. Each option is `{s: ecosystem slug, fl: needs flourishing}`.
-  - required roles, all of which must be met.
-  - nests, which are shown only.
-- `ecoSlug(name, res)` resolves requirement names to an ecosystem in the reserve's biome:
-  - "Lake" becomes `lake-loch` in Scottish Highlands, `lake-taiga` in Sweden and `lake-temperate` in Poland.
-  - "Grassland" in the Tropical biome becomes `grassland-tropical`.
-  - Options outside the reserve's biome are dropped. For example, Red Deer's "Pastures or Mixed Lowland Forest" becomes just Pastures in Poland.
-- `evaluate(P, released)` works out each species' status:
-  - **done** if it's ticked as released.
-  - **locked** if it's above the current tier cap.
-  - **blocked** if a required role isn't filled yet, or none of a flourishing clause's options flourishes.
-  - **ready** otherwise.
-  - A clause with any non-flourishing option counts as "build it yourself" and is never blocking.
-  - An ecosystem flourishes when the released species in that reserve fill all of its roles (`ECO[slug].ro`).
-- `wavesFor(P)` gives the suggested "Step N": repeatedly release everything that's ready, starting from nothing. It's cached per mode and tier.
-- For each ready species, "Releasing this unlocks …" re-runs `evaluate` with that species added.
-- The released ticks live in `rv.released[reserveId]` as species names. `rv` (view, reserve, released, tier, mode) is saved to localStorage `zf-rv`.
+- Colours are CSS custom properties on `:root`, with dark-mode overrides under
+  `prefers-color-scheme` and `[data-theme]`. Add any new colour to **all three** blocks.
+- The look follows planetzoogame.com (olive band, cream background, chunky display type:
+  Lilita One, Barlow, Barlow Condensed) but uses none of its logos or artwork.
+- It works at phone width: the filters become a slide-in panel and the planner columns stack.
+  Keep it that way.
 
-### Accreditation (shared by both tabs)
-- `tierMode` is `"franchise"` or `"career"`. `tierCap` is 0 (no limit) or 1–5.
-- `tierOf(a)` returns the Franchise tier as `a.tier + 1` (the Zoopedia field is 0-based) or the Career tier as `a.ct`. Every tier check goes through `tierOf`.
-- Career has no species at Tier 5. Every species is available by Career Tier 4.
+## Data source gotchas
 
-### Plan import and export
-- File format (`version: 1`):
-  ```json
-  {"app": "Zoopedia Finder", "kind": "reserve-plan", "version": 1, "saved": "ISO date",
-   "mode": "career", "tier": 3, "current": "Great Rift Valley Reserve",
-   "released": {"<reserve name>": ["<species name>", ...]}}
-  ```
-- Import validates the file, shows a preview, and **replaces** the whole plan. Unknown reserves and species are skipped and listed.
-- Export can **Save plan file** through the claude.ai artifact `downloads` capability (`window.claude.use("downloads")`). The button only shows when the capability resolves. **Copy as text** always works, with a select-the-textarea fallback.
-- Only planner state is exported. The species filters are not.
+- Zoopedia `tier` is **0-based**; the page shows `tier + 1`. Always go through `tierOf()`.
+- Career has no Tier 5: every species is available by Career Tier 4.
+- `weight == [1, 1]` is a source placeholder (12 large animals); the page hides it.
+- The Zoopedia's `wild.needs` is incomplete; the planner reads wikily's requirement rows.
+- Species names differ in punctuation across sources (*Thomson's* / *Thomsons*, *Galápagos*);
+  joins go through `norm()` in `build.py`.
+- Every source blocks or rate-limits non-browser clients. A refresh runs the console scrapers
+  in a real browser tab; it cannot be done from a cloud session.
 
-### If it stays a claude.ai artifact
-- The host wraps the file in its own `<html><head><body>`, so the template has no `<html>`/`<head>`/`<body>` tags. `<title>` and `<style>` come first.
-- Content Security Policy:
-  - Scripts can only load from cdnjs, jsdelivr, unpkg, cdn.tailwindcss.com or code.jquery.com. Stylesheets only from Google Fonts.
-  - The page can't fetch any other site.
-  - `<a download>`, `alert()`/`confirm()` and `window.print()` don't work.
-- localStorage is per viewer and per browser, which is why the plan export exists.
-- To republish, use a Claude session that has the Artifact tool. Publish `dist/zoopedia-finder.html` with `url` set to the artifact link above and keep `capabilities: {downloads: true}`.
-- If you host it somewhere else instead, `claude.use` won't exist. The Save button stays hidden and everything else works.
+---
 
-### Styling
-- The colours are CSS custom properties on `:root`, with dark-mode overrides under `prefers-color-scheme` and `[data-theme]`. Add any new colour to all three blocks.
-- The look follows planetzoogame.com (olive band, cream background, chunky display type) but uses none of its logos or artwork.
-- It works at phone width: the filters become a slide-in panel, and the planner columns stack.
+## Status
 
-## Data: schema notes
-
-`data/animals.json` holds one record per species, sorted by name:
-
-| Group | Fields |
-|---|---|
-| Identity and taxonomy | `n` name, `slug`, `sci`, `cls`, `ord`, `fam`, `gen`, `cons` |
-| Range and pack | `biomes`, `cont`, `pack`, `reveal`, `featured`, `livecam` |
-| Enclosure | `encl` (Habitat / Aquarium / Exhibit), `roofed`, `climbproof`, `shoal`, `walk` (guests can walk through), `exhibitTypes` |
-| Accreditation and cost | `tier` (Franchise, **0-based**), `food` |
-| Size | `size` [m♂, m♀, measure], `weight` [kg♂, kg♀] |
-| Barrier | `barrier` {grade, h, climb, water, ww, wd} |
-| Environment | `temp`, `hum`, `sal`, `terrain` [{t, lo, hi, parent}] |
-| Space | `space` {land, shelter, aquatic, deep, climb, flight}: [minimum, +per extra animal] |
-| Group | `group` [min, max, max♂ mixed, max♀ mixed, max♂ bachelor, max♀ bachelor] |
-| Behaviour | `temperament`, `mating`, `dispersal` |
-| Relationships | `thriving`, `neutral`: indices into this array |
-| Enrichment | `enrich`, `foodEnrich` |
-| Lifecycle | `life` [juvenile, adult, elderly years], `repro` [maturity, sterility, gestation, interbirth, litter min, litter max, seasons], `morphs` |
-| Wild | `wild` {groups, eco, reserves, needs} |
-| Added by the build | `rel` {rl, g, r, f} from wikily.gg, `ct` Career tier |
-
-Quirks:
-- `weight == [1, 1]` is a placeholder in the source, used for 12 large animals. The page hides it.
-- `wild.needs` (the Zoopedia's own "required roles") is **incomplete**. For example, it misses the Eurasian Bittern's need for a flourishing Lowland Marsh. The planner therefore uses wikily's `rel.r`.
-- Zoopedia `tier` matches the wikily Franchise list exactly (verified).
-
-## Data refresh
-
-All sources block or rate-limit non-browser clients, so the scrapers are DevTools-console scripts. Run each in a normal browser tab on the page named in its header, then save the clipboard output to the file shown.
-
-| Source | Script | Output | Notes |
-|---|---|---|---|
-| planetzoogame.com/2/zoopedia | `zoopedia.console.js` | `data/raw/zoopedia_packed.json`, then `python3 scripts/decode_zoopedia.py` | Nuxt app. The index is in `useNuxtApp().payload`, each species page embeds `__NUXT_DATA__` (devalue format), and labels come from `useNuxtApp().$i18n`. About 2 minutes. Keep the tab focused, because a background tab stalled the first run. Last export: 5 Oct 2026, with reveals up to 13 Oct. |
-| wikily.gg/planet-zoo-2/release-groups | `wikily.console.js` | `data/wiki.json` | Returns HTTP 429 above roughly one request every 2 seconds, so the script fetches one page at a time with a 2.5-second pause (about 6 minutes). The index only lists 100 species (pagination not solved), so it adds `EXTRA_SLUGS`. Read on 21 Oct 2026. |
-| wikily.gg/planet-zoo-2/accreditation | `accreditation.console.js` | `data/career_tiers.json` | Reads the Career/Franchise tab panels. Re-run on 21 Oct 2026 and the output matched the stored file exactly. |
-
-The scrapers were assembled from the snippets that ran during the original session. Each step has produced the stored data, but `zoopedia.console.js` and `wikily.console.js` have not been run end to end in their assembled form. Check the output when you first use them. `npm run build` fails if species don't join across the sources.
-
-## Known limits and open questions
-
-- **Planner assumptions:**
-  - A role counts reserve-wide once any released species fills it. The game may require the animal to live inside that specific ecosystem area.
-  - The planner doesn't track whether you've built the ecosystems, the release group composition, the research level or nests. It only shows them.
-- "Montane Forest" in Sweden is not mapped to "Montane Forest (Boreal)". That only matters if a species ever needs it to flourish there.
-- Career mode can also gift animals through scenarios. That isn't modelled.
-- The Save-file prompt hasn't been tested in the live artifact viewer. Everything else has been tested in jsdom, and the published page has been checked visually.
-- No-one has decided whether species filter state should be included in exported plans.
-
-## Version history (published artifact)
-
-1. Species finder (search, filters, cards and table, detail drawer)
-2. Reserve planner tab built on wikily.gg data (unrequested scope; see Working with Paul)
-3. Plan export and import
-4. Fix: unreadable ghost buttons on the dark summary bar
-5. Fix: tier label was off by one (Zoopedia tiers are 0-based)
-6. Tier-reached dropdown shared by both tabs
-7. Count text shows how many species are hidden above the tier
-8. Renamed it Franchise accreditation tier
-9. Franchise / Career switch with Career tier data
+21 Oct 2026: handover imported unchanged and verified (build reproduces `dist/` byte for byte,
+the file equals the live artifact, 12/12 smoke tests pass). Open work and decisions:
+`BACKLOG.md`.

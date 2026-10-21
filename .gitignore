@@ -1,2 +1,11 @@
 node_modules/
 __pycache__/
+
+# Exported reserve plans are personal game progress, not project files
+zoopedia-reserve-plan-*.json
+
+# Tooling and OS files
+*.log
+.DS_Store
+Thumbs.db
+scratch/
