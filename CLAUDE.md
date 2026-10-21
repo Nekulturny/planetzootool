@@ -25,7 +25,7 @@ Owner: Paul de Graaff. Built in a Claude Chat session 19–21 Oct 2026, moved in
 
 | Tool | Status |
 |---|---|
-| Zoopedia Finder R1.0.2 | **R1.0.1 released 21 Oct 2026** as artifact https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM version 10 (R1.0.0 = version 9; R1.0.1 = CR-001, version label in the masthead). **R1.0.2 (CR-002) built**: the page works outside claude.ai, and the build also writes `index.html` for the public site https://nekulturny.github.io/planetzootool/ (rule spec §8a). 17-test jsdom suite, passing. Rule spec `docs/Zoopedia_Finder_Rules.md` v1.2. EN only. |
+| Zoopedia Finder R1.0.2 | **Released 21 Oct 2026** on the public site https://nekulturny.github.io/planetzootool/ and as artifact https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM version 11 (R1.0.0 = version 9, R1.0.1 = version 10). R1.0.1 = CR-001, version label in the masthead. R1.0.2 = CR-002, the page works outside claude.ai; the build also writes `index.html` for the site (rule spec §8a). 17-test jsdom suite, passing. Rule spec `docs/Zoopedia_Finder_Rules.md` v1.2. EN only. |
 
 Highest CR: **CR-002**.
 
