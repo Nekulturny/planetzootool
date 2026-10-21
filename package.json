@@ -1,0 +1,12 @@
+{
+  "name": "zoopedia-finder",
+  "private": true,
+  "description": "Searchable Planet Zoo 2 Zoopedia index and wildlife reserve planner (single-file HTML page).",
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "test": "npm run build && node tests/smoke.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "24.1.3"
+  }
+}

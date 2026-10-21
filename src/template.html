@@ -1,0 +1,1148 @@
+<title>Zoopedia Finder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: olive top band + cream hero with search; sticky filter rail on the left, species cards (or table) on the right; detail opens in a right-hand drawer. */
+:root {
+  --bg: #efe5cf;
+  --bg-deco: rgba(122, 104, 60, 0.07);
+  --panel: #fbf6ea;
+  --panel-2: #f4ecda;
+  --ink: #2c2a1e;
+  --ink-soft: #5d5a47;
+  --line: #d8cbaa;
+  --olive: #6f7d33;
+  --olive-deep: #4c5822;
+  --forest: #2f3a22;
+  --on-dark: #f6efdc;
+  --orange: #e98b23;
+  --orange-ink: #3a2405;
+  --focus: #e98b23;
+  --habitat: #6f7d33;
+  --aquarium: #2c7681;
+  --exhibit: #9a5f22;
+  --lc: #5b8636; --nt: #8f9a2e; --vu: #c88e1f; --en: #d0622a; --cr: #b2372a; --na: #8a8574;
+  --thrive: #4e7f2e;
+  --neutral: #8a7a3a;
+  --shadow: 0 1px 0 rgba(60, 50, 20, .08), 0 6px 18px -10px rgba(60, 50, 20, .35);
+  --f-display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --f-label: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --f-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1b1f15; --bg-deco: rgba(200, 190, 140, 0.035); --panel: #252a1d; --panel-2: #2c3222; --ink: #efe7d2; --ink-soft: #b6ae95; --line: #3d4430;
+    --olive: #8d9c46; --olive-deep: #b6c46a; --forest: #12160d; --on-dark: #f3ecd7; --orange: #f0a04a; --orange-ink: #2a1803; --focus: #f0a04a;
+    --habitat: #7f8f3a; --aquarium: #3b8f9b; --exhibit: #b0742f;
+    --lc: #6c9c43; --nt: #a1ac3c; --vu: #d29d2c; --en: #db7238; --cr: #c64a3c; --na: #7d7968;
+    --thrive: #79ad4f; --neutral: #c0ac5a;
+    --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 20px -12px rgba(0,0,0,.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1b1f15; --bg-deco: rgba(200, 190, 140, 0.035); --panel: #252a1d; --panel-2: #2c3222; --ink: #efe7d2; --ink-soft: #b6ae95; --line: #3d4430;
+  --olive: #8d9c46; --olive-deep: #b6c46a; --forest: #12160d; --on-dark: #f3ecd7; --orange: #f0a04a; --orange-ink: #2a1803; --focus: #f0a04a;
+  --habitat: #7f8f3a; --aquarium: #3b8f9b; --exhibit: #b0742f;
+  --lc: #6c9c43; --nt: #a1ac3c; --vu: #d29d2c; --en: #db7238; --cr: #c64a3c; --na: #7d7968;
+  --thrive: #79ad4f; --neutral: #c0ac5a;
+  --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 20px -12px rgba(0,0,0,.7);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 30%, var(--bg-deco) 0 18px, transparent 19px),
+    radial-gradient(circle at 75% 70%, var(--bg-deco) 0 26px, transparent 27px);
+  background-size: 140px 140px, 190px 190px;
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.45;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--olive); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* top band */
+.band { background: var(--olive); color: var(--on-dark); }
+.band-inner { max-width: 1400px; margin: 0 auto; padding-block: 8px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; font-family: var(--f-label); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 13px; }
+.band a { color: var(--on-dark); }
+.pill-unofficial { background: rgba(0,0,0,.18); border-radius: 999px; padding: 2px 10px; }
+
+/* hero */
+.hero { max-width: 1400px; margin: 0 auto; padding-block: 22px 10px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+.hero h1 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(36px, 6vw, 60px); line-height: 1; color: var(--olive-deep); letter-spacing: .02em; text-transform: uppercase; text-wrap: balance; }
+.squiggle { width: 180px; height: 12px; color: var(--olive); }
+.hero p { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+.search { width: min(640px, 100%); position: relative; }
+.search input { width: 100%; padding: 14px 44px 14px 46px; border-radius: 999px; border: 2px solid var(--line); background: var(--panel); font-size: 17px; box-shadow: var(--shadow); }
+.search input:focus { border-color: var(--olive); outline: none; }
+.search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--ink-soft); }
+.search .clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; cursor: pointer; padding: 8px; border-radius: 999px; color: var(--ink-soft); }
+
+/* layout */
+.layout { max-width: 1400px; margin: 0 auto; padding-block: 10px 40px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start; }
+#filters { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px - env(safe-area-inset-top, 0px)); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.f-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 10px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); z-index: 2; }
+.f-head h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--olive-deep); text-transform: uppercase; letter-spacing: .03em; }
+.linkbtn { border: 0; background: none; color: var(--olive-deep); font-weight: 600; cursor: pointer; padding: 4px 6px; border-radius: 6px; text-decoration: underline; text-underline-offset: 3px; }
+.f-close { display: none; }
+details.fs { border-bottom: 1px solid var(--line); }
+details.fs > summary { list-style: none; cursor: pointer; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-family: var(--f-label); font-weight: 700; font-size: 15px; letter-spacing: .07em; text-transform: uppercase; }
+details.fs > summary::-webkit-details-marker { display: none; }
+details.fs > summary .cnt { font-family: var(--f-body); font-size: 12px; letter-spacing: 0; text-transform: none; background: var(--orange); color: var(--orange-ink); border-radius: 999px; padding: 0 8px; font-weight: 700; }
+details.fs > summary::after { content: ""; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-left: 8px; transition: transform .15s; }
+details.fs[open] > summary::after { transform: rotate(-135deg); }
+details.fs > summary > span:first-child { flex: 1; }
+.fs-body { padding: 0 16px 14px; display: grid; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1.5px solid var(--line); background: var(--panel-2); border-radius: 999px; padding: 4px 11px; cursor: pointer; font-size: 13.5px; font-weight: 500; line-height: 1.3; }
+.chip .n { color: var(--ink-soft); font-size: 12px; margin-left: 4px; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--olive); border-color: var(--olive); color: var(--on-dark); }
+.chip[aria-pressed="true"] .n { color: var(--on-dark); opacity: .8; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel-2); padding: 8px 6px; cursor: pointer; font-weight: 600; }
+.seg button + button { border-left: 1.5px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--olive); color: var(--on-dark); }
+.check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 14px; }
+.check input { width: 17px; height: 17px; accent-color: var(--olive); }
+.field { display: grid; gap: 4px; }
+.field label, .lbl { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); }
+.field select, .field input[type="number"] { width: 100%; padding: 8px 10px; border: 1.5px solid var(--line); background: var(--panel-2); border-radius: 8px; }
+.range-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.range-row b { color: var(--ink); }
+input[type="range"] { width: 100%; accent-color: var(--olive); }
+.hint { font-size: 12.5px; color: var(--ink-soft); margin: 0; }
+.compat-picked { display: flex; flex-wrap: wrap; gap: 6px; }
+.tagx { display: inline-flex; align-items: center; gap: 4px; background: var(--forest); color: var(--on-dark); border-radius: 999px; padding: 3px 4px 3px 10px; font-size: 13px; font-weight: 600; }
+.tagx button { border: 0; background: rgba(255,255,255,.15); color: inherit; border-radius: 999px; width: 20px; height: 20px; cursor: pointer; line-height: 1; padding: 0; }
+
+/* toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.count { font-family: var(--f-display); font-size: 22px; color: var(--olive-deep); }
+.count small { font-family: var(--f-body); font-size: 14px; color: var(--ink-soft); }
+.tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tools select { padding: 8px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--panel); }
+.btn { border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; font-family: var(--f-label); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 14px; }
+.btn-orange { background: var(--orange); color: var(--orange-ink); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.btn-ghost { background: var(--panel); border: 1.5px solid var(--line); color: var(--ink); }
+.viewseg { display: inline-grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--line); border-radius: 999px; overflow: hidden; }
+.viewseg button { border: 0; background: var(--panel); padding: 7px 14px; cursor: pointer; font-weight: 600; }
+.viewseg button[aria-pressed="true"] { background: var(--forest); color: var(--on-dark); }
+#filterToggle { display: none; }
+.active { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; min-height: 0; }
+.active:empty { display: none; }
+.achip { display: inline-flex; gap: 6px; align-items: center; background: var(--panel); border: 1.5px solid var(--olive); color: var(--ink); border-radius: 999px; padding: 3px 6px 3px 10px; font-size: 13px; }
+.achip button { border: 0; background: var(--olive); color: var(--on-dark); width: 18px; height: 18px; border-radius: 999px; cursor: pointer; font-size: 12px; line-height: 1; padding: 0; }
+
+/* cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 14px; }
+.card { text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 14px; padding: 14px; cursor: pointer; display: grid; gap: 9px; align-content: start; box-shadow: var(--shadow); transition: transform .12s, border-color .12s; min-width: 0; }
+.card:hover { transform: translateY(-2px); border-color: var(--olive); }
+.card-top { display: flex; justify-content: space-between; gap: 6px; align-items: center; }
+.card h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 21px; line-height: 1.1; color: var(--olive-deep); text-wrap: balance; }
+.sci { margin: -4px 0 0; font-style: italic; color: var(--ink-soft); font-size: 14px; }
+.badge { display: inline-block; border-radius: 6px; padding: 2px 8px; font-family: var(--f-label); font-weight: 700; font-size: 12.5px; letter-spacing: .07em; text-transform: uppercase; color: #fff; }
+.b-Habitat { background: var(--habitat); } .b-Aquarium { background: var(--aquarium); } .b-Exhibit { background: var(--exhibit); }
+.cons { display: inline-block; border-radius: 999px; min-width: 32px; text-align: center; padding: 2px 7px; font-family: var(--f-label); font-weight: 700; font-size: 12.5px; letter-spacing: .05em; color: #fff; }
+.c-LC { background: var(--lc); } .c-NT { background: var(--nt); } .c-VU { background: var(--vu); } .c-EN { background: var(--en); } .c-CR { background: var(--cr); } .c-NA { background: var(--na); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin: 0; }
+.stats div { min-width: 0; }
+.stats dt { font-family: var(--f-label); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.stats dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mini { display: flex; flex-wrap: wrap; gap: 5px; }
+.mini span { font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.flags { display: flex; flex-wrap: wrap; gap: 6px; }
+.flag { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 2px 9px; background: var(--forest); color: var(--on-dark); }
+.flag svg { width: 14px; height: 14px; }
+.flag.t { background: var(--thrive); color: #fff; }
+.flag.nn { background: var(--neutral); color: #fff; }
+.empty { padding: 40px 16px; text-align: center; background: var(--panel); border: 1px dashed var(--line); border-radius: 14px; }
+.empty h3 { font-family: var(--f-display); font-weight: 400; color: var(--olive-deep); margin: 0 0 6px; font-size: 24px; }
+
+/* table */
+.tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { position: sticky; top: 0; background: var(--panel-2); font-family: var(--f-label); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: 13px; }
+th button { border: 0; background: none; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit; padding: 0; }
+th button[data-dir]::after { content: attr(data-dir); margin-left: 4px; color: var(--orange); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+tbody tr { cursor: pointer; }
+tbody tr:hover td { background: var(--panel-2); }
+td.nm { font-weight: 700; color: var(--olive-deep); }
+
+/* drawer */
+#backdrop { position: fixed; inset: 0; background: rgba(20, 18, 10, .45); z-index: 70; }
+#drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(600px, 100vw); background: var(--bg); z-index: 80; overflow-y: auto; box-shadow: -10px 0 30px rgba(0,0,0,.25); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.d-head { background: var(--forest); color: var(--on-dark); padding: 18px 20px 16px; position: sticky; top: 0; z-index: 2; display: grid; gap: 6px; }
+.d-head h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 32px; line-height: 1.05; text-wrap: balance; padding-right: 44px; }
+.d-head .sci { color: var(--on-dark); opacity: .8; margin: 0; }
+.d-close { position: absolute; top: 14px; right: 14px; border: 0; background: rgba(255,255,255,.14); color: var(--on-dark); width: 36px; height: 36px; border-radius: 999px; cursor: pointer; font-size: 20px; line-height: 1; }
+.d-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.d-body { padding: 16px 20px 30px; display: grid; gap: 14px; }
+.sec { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; }
+.sec h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 20px; color: var(--olive-deep); text-transform: uppercase; letter-spacing: .03em; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 14px; margin: 0; }
+.kv div { min-width: 0; }
+.kv dt { font-family: var(--f-label); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.kv dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kv dd small { font-weight: 500; color: var(--ink-soft); }
+.terrain { display: grid; gap: 7px; }
+.tr { display: grid; grid-template-columns: 130px minmax(0, 1fr) 76px; gap: 10px; align-items: center; font-size: 14px; }
+.tr .bar { position: relative; height: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.tr .bar i { position: absolute; top: 0; bottom: 0; background: var(--olive); border-radius: 999px; min-width: 3px; }
+.tr .pct { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-soft); font-size: 13px; }
+.rel { display: flex; flex-wrap: wrap; gap: 6px; }
+.rel button { border: 0; cursor: pointer; border-radius: 999px; padding: 3px 10px; font-size: 13.5px; font-weight: 600; color: #fff; }
+.rel .t { background: var(--thrive); } .rel .nn { background: var(--neutral); }
+.chiplist { display: flex; flex-wrap: wrap; gap: 6px; }
+.chiplist span { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 13.5px; }
+.sub { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); margin: 2px 0 -2px; }
+.d-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.d-actions a { text-decoration: none; display: inline-flex; align-items: center; }
+.muted { color: var(--ink-soft); }
+.foot { max-width: 1400px; margin: 0 auto; padding-block: 0 30px; color: var(--ink-soft); font-size: 13px; }
+.foot p { margin: 0 0 4px; max-width: 90ch; }
+
+/* view tabs + reserve planner */
+.viewtabs { display: inline-grid; grid-template-columns: 1fr 1fr; border: 2px solid var(--olive); border-radius: 999px; overflow: hidden; background: var(--panel); box-shadow: var(--shadow); }
+.viewtabs button { border: 0; background: transparent; padding: 9px 20px; cursor: pointer; font-family: var(--f-label); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 15px; color: var(--olive-deep); }
+.viewtabs button[aria-selected="true"] { background: var(--olive); color: var(--on-dark); }
+.rv { max-width: 1400px; margin: 0 auto; padding-block: 8px 40px; display: grid; gap: 16px; }
+.rv-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.rpick { text-align: left; border: 2px solid var(--line); background: var(--panel); border-radius: 12px; padding: 10px 14px 12px; cursor: pointer; display: grid; gap: 3px; box-shadow: var(--shadow); color: var(--ink); }
+.rpick b { font-family: var(--f-display); font-weight: 400; font-size: 20px; line-height: 1.1; color: var(--olive-deep); }
+.rpick span { font-size: 13px; color: var(--ink-soft); }
+.rpick[aria-pressed="true"] { border-color: var(--olive); background: var(--olive); }
+.rpick[aria-pressed="true"] b, .rpick[aria-pressed="true"] span { color: var(--on-dark); }
+.mbar { height: 6px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; margin-top: 4px; }
+.mbar i { display: block; height: 100%; background: var(--orange); }
+.rv-summary { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; background: var(--forest); color: var(--on-dark); border-radius: 14px; padding: 14px 18px; }
+.rv-summary h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 26px; line-height: 1.05; }
+.rv-summary p { margin: 2px 0 0; font-size: 13.5px; opacity: .85; }
+.rv-stats { display: flex; flex-wrap: wrap; gap: 8px 26px; }
+.rv-stat b { font-family: var(--f-display); font-size: 28px; font-weight: 400; display: block; line-height: 1; font-variant-numeric: tabular-nums; }
+.rv-stat span { font-family: var(--f-label); font-size: 12.5px; letter-spacing: .07em; text-transform: uppercase; opacity: .8; }
+.rv-summary .linkbtn { color: var(--on-dark); }
+.rv-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.rv-col { display: grid; gap: 12px; min-width: 0; }
+.rv-col > h2 { margin: 6px 0 0; font-family: var(--f-display); font-weight: 400; color: var(--olive-deep); font-size: 24px; text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: baseline; gap: 10px; }
+.rv-col > h2 small { font-family: var(--f-body); font-size: 14px; color: var(--ink-soft); text-transform: none; letter-spacing: 0; }
+.rv-hint { margin: -6px 0 0; font-size: 13.5px; color: var(--ink-soft); max-width: 70ch; }
+.sprow { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; box-shadow: var(--shadow); min-width: 0; }
+.sprow.is-done { background: var(--panel-2); box-shadow: none; }
+.sprow-top { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; }
+.relchk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink-soft); }
+.relchk input { width: 18px; height: 18px; accent-color: var(--olive); }
+.sp-name { font-family: var(--f-display); font-weight: 400; font-size: 21px; line-height: 1.1; color: var(--olive-deep); border: 0; background: none; padding: 0; cursor: pointer; text-align: left; }
+.sp-name:hover { text-decoration: underline; text-underline-offset: 3px; }
+.step { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .07em; text-transform: uppercase; border: 1.5px solid var(--line); border-radius: 6px; padding: 1px 7px; color: var(--ink-soft); }
+.stp { margin-left: auto; border-radius: 999px; padding: 2px 10px; font-family: var(--f-label); font-weight: 700; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; }
+.stp-ready { background: var(--thrive); color: #fff; }
+.stp-blocked { background: var(--vu); color: #2a1b00; }
+.stp-done { background: transparent; border: 1.5px solid var(--line); color: var(--ink-soft); }
+.req { display: grid; gap: 6px; font-size: 14px; }
+.req-line { display: flex; gap: 8px; align-items: flex-start; min-width: 0; }
+.req-line > div { min-width: 0; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.ic { flex: none; width: 18px; height: 18px; margin-top: 1px; border-radius: 999px; display: inline-grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff; line-height: 1; }
+.ic-ok { background: var(--thrive); } .ic-no { background: var(--en); } .ic-build { background: transparent; border: 1.5px solid var(--ink-soft); color: var(--ink-soft); }
+.pv { border: 0; cursor: pointer; border-radius: 999px; padding: 1px 9px; font-size: 12.5px; font-weight: 600; line-height: 1.5; }
+.pv-done { background: var(--thrive); color: #fff; }
+.pv-ready { background: var(--panel); border: 1.5px solid var(--thrive); color: var(--ink); }
+.pv-blocked { background: var(--panel); border: 1.5px dashed var(--ink-soft); color: var(--ink-soft); }
+.rmeta { font-size: 13px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.rmeta b { color: var(--ink); font-weight: 600; }
+.unlocks { font-size: 13.5px; background: var(--panel-2); border-radius: 8px; padding: 6px 10px; }
+.unlocks b { color: var(--olive-deep); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-soft); align-items: center; }
+.legend .pv { cursor: default; }
+details.done-list > summary { cursor: pointer; font-family: var(--f-label); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); padding: 4px 0; }
+details.done-list[open] > summary { margin-bottom: 8px; }
+.done-grid { display: grid; gap: 8px; }
+.ecocard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.eco-top { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.ecocard h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 19px; color: var(--olive-deep); }
+.flr { border-radius: 999px; padding: 1px 9px; font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.flr-yes { background: var(--thrive); color: #fff; } .flr-no { background: var(--panel-2); border: 1.5px solid var(--line); color: var(--ink-soft); }
+.ecocard details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--olive-deep); }
+.ecocard ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); }
+.ecocard .rmeta { display: block; }
+.empty-sm { padding: 14px; text-align: center; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: 12px; font-size: 14px; }
+.rgroups { display: grid; gap: 4px; }
+.rgroups div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; font-size: 14px; border-bottom: 1px dashed var(--line); padding-bottom: 3px; }
+.rgroups span:last-child { font-variant-numeric: tabular-nums; color: var(--ink-soft); text-align: right; }
+.hero-controls { display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: center; align-items: center; }
+.tierpick { display: inline-flex; align-items: center; gap: 8px; background: var(--panel); border: 2px solid var(--line); border-radius: 999px; padding: 4px 5px 4px 14px; box-shadow: var(--shadow); cursor: pointer; }
+.tierpick span { font-family: var(--f-label); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 13px; color: var(--ink-soft); }
+.tierpick select { border: 0; background: var(--panel-2); color: var(--ink); font-weight: 700; border-radius: 999px; padding: 6px 10px; cursor: pointer; }
+.tierpick.on { border-color: var(--orange); }
+.tierpick.on #tierSel { background: var(--orange); color: var(--orange-ink); }
+.stp-locked { background: var(--panel-2); border: 1.5px dashed var(--ink-soft); color: var(--ink-soft); }
+.pv-locked { background: transparent; border: 1.5px dotted var(--ink-soft); color: var(--ink-soft); text-decoration: line-through; text-decoration-thickness: 1px; }
+.rv-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rv-io { background: var(--panel); border: 2px solid var(--olive); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: var(--shadow); }
+.io-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.io-head h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--olive-deep); text-transform: uppercase; letter-spacing: .03em; }
+.io-x { border: 0; background: var(--panel-2); color: var(--ink); width: 32px; height: 32px; border-radius: 999px; cursor: pointer; font-size: 16px; }
+.rv-io p { margin: 0; max-width: 72ch; }
+.rv-io textarea { width: 100%; font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel-2); color: var(--ink); border: 1.5px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+.rv-io details summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--olive-deep); margin-bottom: 6px; }
+.io-file { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.io-file input { max-width: 100%; font-size: 14px; }
+.io-ok { font-weight: 600; color: var(--thrive); }
+.io-err { font-weight: 600; color: var(--en); }
+.io-or { font-family: var(--f-label); font-weight: 700; letter-spacing: .07em; text-transform: uppercase; font-size: 12.5px; color: var(--ink-soft); }
+@media (max-width: 900px) {
+  .rv-grid { grid-template-columns: minmax(0, 1fr); }
+  .stp { margin-left: 0; }
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  #filters { position: fixed; top: 0; bottom: 0; left: 0; width: min(360px, 90vw); max-height: none; border-radius: 0 14px 14px 0; z-index: 75; transform: translateX(-105%); transition: transform .2s; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); }
+  #filters.open { transform: none; }
+  .f-close { display: inline-block; }
+  #filterToggle { display: inline-block; }
+  .tr { grid-template-columns: 100px minmax(0, 1fr) 70px; }
+}
+@media (max-width: 520px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .d-head h2 { font-size: 27px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="band"><div class="band-inner gutter">
+  <span>Planet Zoo 2 companion <span class="pill-unofficial">Unofficial</span></span>
+  <span id="bandMeta"></span>
+</div></div>
+
+<section class="hero gutter">
+  <h1>Zoopedia Finder</h1>
+  <svg class="squiggle" viewBox="0 0 180 12" aria-hidden="true"><path d="M2 7 Q 12 1 22 7 T 42 7 T 62 7 T 82 7 T 102 7 T 122 7 T 142 7 T 162 7 T 178 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+  <p id="heroText">Every animal in the Planet Zoo 2 Zoopedia with its habitat requirements, compatibility, walk-through rules and lifecycle stats. Search anything, then narrow it down with the filters.</p>
+  <div class="hero-controls">
+    <div class="viewtabs" role="tablist" aria-label="Section">
+      <button role="tab" id="tabSpecies" aria-selected="true" aria-controls="speciesView">Species</button>
+      <button role="tab" id="tabReserves" aria-selected="false" aria-controls="reserveView">Reserve planner</button>
+    </div>
+    <div class="tierpick" id="tierPick"><span>Accreditation</span>
+      <select id="modeSel" aria-label="Game mode">
+        <option value="franchise">Franchise</option>
+        <option value="career">Career</option>
+      </select>
+      <select id="tierSel" aria-label="Tier reached">
+        <option value="0">No limit</option>
+        <option value="1">Tier 1</option>
+        <option value="2">Tier 2</option>
+        <option value="3">Tier 3</option>
+        <option value="4">Tier 4</option>
+        <option value="5">Tier 5</option>
+      </select>
+    </div>
+  </div>
+  <div class="search" id="searchBox">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <input id="q" type="search" placeholder="Search name, family, biome, enrichment, colour morph…" autocomplete="off" aria-label="Search species">
+    <button class="clear" id="qClear" aria-label="Clear search" hidden>✕</button>
+  </div>
+</section>
+
+<div class="layout gutter" id="speciesView" role="tabpanel">
+  <aside id="filters" aria-label="Filters">
+    <div class="f-head">
+      <h2>Filters</h2>
+      <div><button class="linkbtn" id="resetAll">Reset</button> <button class="linkbtn f-close" id="fClose">Done</button></div>
+    </div>
+    <div id="fsections"></div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <div class="count" id="count" aria-live="polite"></div>
+      <div class="tools">
+        <button class="btn btn-orange" id="filterToggle">Filters</button>
+        <label class="lbl" for="sort" style="margin-right:-2px">Sort</label>
+        <select id="sort">
+          <option value="name">Name A–Z</option>
+          <option value="land">Land area (smallest first)</option>
+          <option value="landd">Land area (largest first)</option>
+          <option value="food">Food cost (cheapest first)</option>
+          <option value="group">Max group size (largest first)</option>
+          <option value="tmin">Coldest tolerated first</option>
+          <option value="tmax">Hottest tolerated first</option>
+          <option value="cons">Most threatened first</option>
+          <option value="compat">Most compatible species first</option>
+          <option value="reveal">Newest reveal first</option>
+        </select>
+        <div class="viewseg" role="group" aria-label="View">
+          <button id="vCards" aria-pressed="true">Cards</button>
+          <button id="vTable" aria-pressed="false">Table</button>
+        </div>
+      </div>
+    </div>
+    <div class="active" id="active"></div>
+    <div id="results"></div>
+  </main>
+</div>
+
+<section class="rv gutter" id="reserveView" role="tabpanel" hidden>
+  <div class="rv-picker" id="rvPicker" role="group" aria-label="Wildlife reserve"></div>
+  <div class="rv-summary" id="rvSummary"></div>
+  <div class="rv-io" id="rvIO" hidden></div>
+  <div class="rv-grid">
+    <div class="rv-col" id="rvSpecies"></div>
+    <div class="rv-col" id="rvEcos"></div>
+  </div>
+</section>
+
+<footer class="foot gutter">
+  <p id="footMeta"></p>
+  <p>Unofficial fan index built from the public Zoopedia pages on planetzoogame.com. Descriptions, fun facts and images live on the official pages, which every entry links to. Weights listed as exactly 1 kg on the source are placeholders and are hidden here.</p>
+  <p>Release groups, reserve requirements and ecosystem flourishing roles come from the <a href="https://wikily.gg/planet-zoo-2/release-groups" target="_blank" rel="noopener">wikily.gg Planet Zoo 2 wiki</a> (read 21 Oct 2026). Career and Franchise accreditation tiers come from its Accreditation page. The planner treats a role as filled once any released species in that reserve provides it.</p>
+</footer>
+
+<div id="backdrop" hidden></div>
+<div id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle"></div>
+
+<script>
+const DATA = /*__DATA__*/;
+const A = DATA.animals;
+const ICON_WALK = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><ellipse cx="8" cy="8.5" rx="3" ry="4.6"/><ellipse cx="8.4" cy="16.6" rx="2.2" ry="1.8"/><ellipse cx="16" cy="11.5" rx="3" ry="4.6"/><ellipse cx="15.6" cy="19.6" rx="2.2" ry="1.8"/></g></svg>';
+const CONS_CODE = {"Least Concern":"LC","Near Threatened":"NT","Vulnerable":"VU","Endangered":"EN","Critically Endangered":"CR","Extinct in the Wild":"EW","Data Deficient":"DD","Not Evaluated":"NE","Domesticated":"DOM"};
+const CONS_RANK = {"Critically Endangered":0,"Extinct in the Wild":0,"Endangered":1,"Vulnerable":2,"Near Threatened":3,"Least Concern":4,"Data Deficient":5,"Not Evaluated":6,"Domesticated":7};
+const consClass = c => ({LC:"LC",NT:"NT",VU:"VU",EN:"EN",CR:"CR",EW:"CR"})[CONS_CODE[c]] || "NA";
+
+/* relationships: thriving wins over neutral; data is symmetric */
+const REL = A.map(() => ({}));
+A.forEach((a, i) => {
+  a.neutral.forEach(j => { if (!REL[i][j]) REL[i][j] = "N"; });
+  a.thriving.forEach(j => { REL[i][j] = "T"; });
+});
+A.forEach((a, i) => {
+  a._i = i;
+  a._t = Object.keys(REL[i]).filter(j => REL[i][j] === "T").map(Number);
+  a._n = Object.keys(REL[i]).filter(j => REL[i][j] === "N").map(Number);
+  a._compat = a._t.length + a._n.length;
+  if (a.weight && a.weight[0] === 1 && a.weight[1] === 1) a.weight = [null, null];
+  a._temperament = a.temperament || "Not applicable";
+  a._s = [a.n, a.sci, a.cls, a.ord, a.fam, a.gen, a.cons, a.encl, a.pack, a.temperament, a.mating, a.walk ? "walkthrough walk-through" : "",
+    ...a.biomes, ...a.cont, ...a.roles, ...a.enrich, ...a.foodEnrich, ...a.morphs, ...a.terrain.map(t => t.t), ...a.wild.eco, ...a.wild.reserves, ...a.exhibitTypes]
+    .filter(Boolean).join(" | ").toLowerCase();
+});
+
+const fmt = (n, d = 2) => n == null ? "–" : (Math.round(n * 10 ** d) / 10 ** d).toLocaleString("en-GB");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+const yrs = y => y == null || y === 0 ? "–" : (y < 2 ? fmt(y * 12, 1) + " mo" : fmt(y, 1) + " yr");
+const range = (a, b, unit = "") => a == null && b == null ? "–" : (a === b ? fmt(a) : fmt(a) + "–" + fmt(b)) + unit;
+
+/* vocabularies */
+const count = (fn) => { const m = new Map(); A.forEach(a => [].concat(fn(a)).filter(v => v != null && v !== "").forEach(v => m.set(v, (m.get(v) || 0) + 1))); return m; };
+const ORDER = {
+  encl: ["Habitat", "Aquarium", "Exhibit"],
+  cons: ["Critically Endangered", "Endangered", "Vulnerable", "Near Threatened", "Least Concern", "Data Deficient", "Not Evaluated", "Domesticated"],
+  temper: ["Shy", "Neutral", "Confident", "Not applicable"]
+};
+const sortVocab = (m, order) => { const keys = [...m.keys()]; return order ? keys.sort((a, b) => order.indexOf(a) - order.indexOf(b)) : keys.sort((a, b) => m.get(b) - m.get(a) || a.localeCompare(b)); };
+const V = {
+  encl: count(a => a.encl), biome: count(a => a.biomes), cont: count(a => a.cont), cls: count(a => a.cls), cons: count(a => a.cons),
+  temper: count(a => a._temperament), pack: count(a => a.pack), terrain: count(a => a.terrain.map(t => t.t)), reserve: count(a => a.wild.reserves),
+  roles: count(a => a.roles), mating: count(a => a.mating)
+};
+const landVals = A.map(a => a.space.land && a.space.land[0]).filter(v => v != null);
+const LAND_MAX = Math.max(...landVals);
+const FOOD_MAX = Math.max(...A.map(a => a.food || 0));
+
+/* state */
+const SETS = ["encl", "biome", "cont", "cls", "cons", "temper", "pack", "terrain", "reserve", "roles", "mating"];
+const fresh = () => ({ q: "", walk: "any", compat: [], compatMode: "any", hasCompat: false, temp: "", maxLand: LAND_MAX, maxFood: FOOD_MAX, maxGrade: "", waterOK: false, roofed: false, climbproof: false, shoal: false, morphs: false, featured: false, sort: "name", view: "cards", ...Object.fromEntries(SETS.map(k => [k, new Set()])) });
+let st = fresh();
+try {
+  const saved = JSON.parse(localStorage.getItem("zf-state") || "null");
+  if (saved) { Object.assign(st, saved); SETS.forEach(k => st[k] = new Set(saved[k] || [])); if (st.maxLand > LAND_MAX) st.maxLand = LAND_MAX; if (st.maxFood > FOOD_MAX) st.maxFood = FOOD_MAX; }
+} catch (e) {}
+const save = () => { try { const o = { ...st }; SETS.forEach(k => o[k] = [...st[k]]); localStorage.setItem("zf-state", JSON.stringify(o)); } catch (e) {} };
+
+/* filter sections */
+const LABELS = { encl: "Enclosure", biome: "Biome", cont: "Native range", cls: "Class", cons: "Conservation status", temper: "Temperament", pack: "Content", terrain: "Terrain used", reserve: "Wild reserve", roles: "Ecosystem role", mating: "Mating system" };
+function chipGroup(key, order) {
+  const m = V[key];
+  return `<div class="chips" data-set="${key}">` + sortVocab(m, order).map(v => `<button class="chip" data-v="${esc(v)}" aria-pressed="${st[key].has(v)}">${esc(v)}<span class="n">${m.get(v)}</span></button>`).join("") + `</div>`;
+}
+function section(id, title, body, open) {
+  return `<details class="fs" data-sec="${id}"${open ? " open" : ""}><summary><span>${title}</span><span class="cnt" hidden></span></summary><div class="fs-body">${body}</div></details>`;
+}
+const animalOptions = [...A].sort((a, b) => a.n.localeCompare(b.n)).filter(a => a._compat > 0).map(a => `<option value="${a._i}">${esc(a.n)} (${a._compat})</option>`).join("");
+document.getElementById("fsections").innerHTML = [
+  section("encl", "Enclosure", chipGroup("encl", ORDER.encl) + `
+    <label class="check"><input type="checkbox" id="fRoofed"> Needs a roofed habitat</label>
+    <label class="check"><input type="checkbox" id="fClimb"> Needs climb-proof barriers</label>
+    <label class="check"><input type="checkbox" id="fShoal"> Shoal fish only</label>`, true),
+  section("walk", "Guests can walk through", `<div class="seg" role="group" aria-label="Guests can walk through">
+    <button data-walk="any">Any</button><button data-walk="yes">Yes</button><button data-walk="no">No</button></div>
+    <p class="hint">Habitat and aquarium species use the walk-through flag; exhibit species count as yes when a walkthrough exhibit is allowed.</p>`, true),
+  section("compat", "Shares a habitat with", `<div class="field"><label for="compatAdd">Add a species</label>
+    <select id="compatAdd"><option value="">Choose a species…</option>${animalOptions}</select></div>
+    <div class="compat-picked" id="compatPicked"></div>
+    <div class="seg" role="group" aria-label="Relationship" style="grid-template-columns:1fr 1fr">
+      <button data-cm="any">Thriving or neutral</button><button data-cm="thriving">Thriving only</button></div>
+    <label class="check"><input type="checkbox" id="fHasCompat"> Only species that can share with others</label>
+    <p class="hint">With several species picked, results must get along with all of them. Numbers show how many partners each species has.</p>`, true),
+  section("biome", "Biome", chipGroup("biome"), true),
+  section("cont", "Native range", chipGroup("cont")),
+  section("temp", "Temperature", `<div class="field"><label for="fTemp">Comfortable at (°C)</label><input type="number" id="fTemp" placeholder="e.g. 20" step="1"></div>
+    <p class="hint">Shows species whose habitat temperature range includes this value.</p>`),
+  section("space", "Space and cost", `<div class="field"><div class="range-row"><span class="lbl">Max land area</span><b id="landOut"></b></div>
+    <input type="range" id="fLand" min="0" max="${LAND_MAX}" step="10" aria-label="Maximum land area"></div>
+    <div class="field"><div class="range-row"><span class="lbl">Max food cost</span><b id="foodOut"></b></div>
+    <input type="range" id="fFood" min="0" max="${FOOD_MAX}" step="10" aria-label="Maximum food cost"></div>
+    <p class="hint">Species without a land requirement (aquarium and exhibit animals) are not limited by the land slider.</p>`),
+  section("barrier", "Barrier", `<div class="field"><label for="fGrade">Highest barrier grade you have</label>
+    <select id="fGrade"><option value="">Any</option><option value="1">Grade 1</option><option value="2">Grade 2</option><option value="3">Grade 3</option><option value="4">Grade 4</option></select></div>
+    <label class="check"><input type="checkbox" id="fWater"> Water barrier allowed</label>`),
+  section("cls", "Class", chipGroup("cls")),
+  section("cons", "Conservation status", chipGroup("cons", ORDER.cons)),
+  section("temper", "Temperament", chipGroup("temper", ORDER.temper)),
+  section("mating", "Mating system", chipGroup("mating")),
+  section("roles", "Ecosystem role", chipGroup("roles")),
+  section("terrain", "Terrain used", chipGroup("terrain")),
+  section("reserve", "Wild reserve", chipGroup("reserve")),
+  section("pack", "Content and extras", chipGroup("pack") + `
+    <label class="check"><input type="checkbox" id="fMorph"> Has colour morphs</label>
+    <label class="check"><input type="checkbox" id="fFeatured"> Featured on the Zoopedia</label>`)
+].join("");
+
+const $ = id => document.getElementById(id);
+
+/* matching */
+function matches(a) {
+  if (tierCap && tierOf(a) > tierCap) return false;
+  if (st.q) { const toks = st.q.toLowerCase().split(/\s+/).filter(Boolean); if (!toks.every(t => a._s.includes(t))) return false; }
+  if (st.encl.size && !st.encl.has(a.encl)) return false;
+  if (st.roofed && !a.roofed) return false;
+  if (st.climbproof && !a.climbproof) return false;
+  if (st.shoal && !a.shoal) return false;
+  if (st.walk === "yes" && !a.walk) return false;
+  if (st.walk === "no" && a.walk) return false;
+  if (st.compat.length) {
+    for (const j of st.compat) {
+      if (j === a._i) return false;
+      const r = REL[a._i][j];
+      if (!r || (st.compatMode === "thriving" && r !== "T")) return false;
+    }
+  }
+  if (st.hasCompat && !a._compat) return false;
+  const any = (key, vals) => !st[key].size || vals.some(v => st[key].has(v));
+  if (!any("biome", a.biomes) || !any("cont", a.cont) || !any("cls", [a.cls]) || !any("cons", [a.cons]) || !any("temper", [a._temperament]) || !any("pack", [a.pack])
+    || !any("terrain", a.terrain.map(t => t.t)) || !any("reserve", a.wild.reserves) || !any("roles", a.roles) || !any("mating", [a.mating])) return false;
+  if (st.temp !== "" && st.temp != null) { const t = Number(st.temp); if (!(a.temp[0] <= t && t <= a.temp[1])) return false; }
+  if (st.maxLand < LAND_MAX && a.space.land && a.space.land[0] > st.maxLand) return false;
+  if (st.maxFood < FOOD_MAX && (a.food || 0) > st.maxFood) return false;
+  if (st.maxGrade && a.barrier && a.barrier.grade > Number(st.maxGrade)) return false;
+  if (st.waterOK && !(a.barrier && a.barrier.water)) return false;
+  if (st.morphs && !a.morphs.length) return false;
+  if (st.featured && !a.featured) return false;
+  return true;
+}
+const SORTS = {
+  name: (a, b) => a.n.localeCompare(b.n),
+  land: (a, b) => (a.space.land ? a.space.land[0] : 1e9) - (b.space.land ? b.space.land[0] : 1e9) || a.n.localeCompare(b.n),
+  landd: (a, b) => (b.space.land ? b.space.land[0] : -1) - (a.space.land ? a.space.land[0] : -1) || a.n.localeCompare(b.n),
+  food: (a, b) => (a.food || 0) - (b.food || 0) || a.n.localeCompare(b.n),
+  group: (a, b) => b.group[1] - a.group[1] || a.n.localeCompare(b.n),
+  tmin: (a, b) => a.temp[0] - b.temp[0] || a.n.localeCompare(b.n),
+  tmax: (a, b) => b.temp[1] - a.temp[1] || a.n.localeCompare(b.n),
+  cons: (a, b) => (CONS_RANK[a.cons] ?? 9) - (CONS_RANK[b.cons] ?? 9) || a.n.localeCompare(b.n),
+  compat: (a, b) => b._compat - a._compat || a.n.localeCompare(b.n),
+  reveal: (a, b) => (b.reveal || "").localeCompare(a.reveal || "") || a.n.localeCompare(b.n)
+};
+
+/* cards */
+function cardStats(a) {
+  const s = [];
+  if (a.encl === "Habitat") {
+    s.push(["Land area", a.space.land ? fmt(a.space.land[0]) + " m²" : "–"]);
+    s.push(["Group", range(a.group[0], a.group[1])]);
+    s.push(["Temperature", range(a.temp[0], a.temp[1], " °C")]);
+    s.push(["Barrier", a.barrier ? "G" + a.barrier.grade + " · " + fmt(a.barrier.h) + " m" : "–"]);
+  } else if (a.encl === "Aquarium") {
+    s.push(["Deep water", a.space.deep ? fmt(a.space.deep[0]) + " m²" : "–"]);
+    s.push(["Group", range(a.group[0], a.group[1])]);
+    s.push(["Temperature", range(a.temp[0], a.temp[1], " °C")]);
+    s.push(["Water", a.sal || "–"]);
+  } else {
+    s.push(["Group", range(a.group[0], a.group[1])]);
+    s.push(["Temperature", range(a.temp[0], a.temp[1], " °C")]);
+    s.push(["Humidity", a.hum ? range(a.hum[0], a.hum[1], "%") : "–"]);
+    s.push(["Food cost", "$" + fmt(a.food, 0)]);
+  }
+  return s.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+}
+function compatFlags(a) {
+  return st.compat.map(j => { const r = REL[a._i][j]; return r ? `<span class="flag ${r === "T" ? "t" : "nn"}">${r === "T" ? "Thrives with" : "Neutral with"} ${esc(A[j].n)}</span>` : ""; }).join("");
+}
+function card(a) {
+  return `<div class="card" role="button" tabindex="0" data-i="${a._i}" aria-label="${esc(a.n)}">
+    <div class="card-top"><span class="badge b-${a.encl}">${a.encl}${a.shoal ? " · shoal" : ""}</span><span class="cons c-${consClass(a.cons)}" title="${esc(a.cons)}">${CONS_CODE[a.cons] || "–"}</span></div>
+    <h3>${esc(a.n)}</h3><p class="sci">${esc(a.sci)}</p>
+    <dl class="stats">${cardStats(a)}</dl>
+    <div class="mini">${a.biomes.map(b => `<span>${esc(b)}</span>`).join("")}</div>
+    <div class="flags">${a.walk ? `<span class="flag">${ICON_WALK}Walk-through</span>` : ""}${a._compat && !st.compat.length ? `<span class="flag nn" style="background:var(--olive)">${a._compat} compatible</span>` : ""}${compatFlags(a)}</div>
+  </div>`;
+}
+
+/* table */
+const COLS = [
+  ["Name", a => a.n, a => `<td class="nm">${esc(a.n)}</td>`],
+  ["Enclosure", a => a.encl, a => `<td><span class="badge b-${a.encl}">${a.encl}</span></td>`],
+  ["Walk-through", a => a.walk ? 1 : 0, a => `<td>${a.walk ? "Yes" : "No"}</td>`],
+  ["Biomes", a => a.biomes.join(", "), a => `<td>${esc(a.biomes.join(", "))}</td>`],
+  ["Native range", a => a.cont.join(", "), a => `<td>${esc(a.cont.join(", "))}</td>`],
+  ["Land m²", a => a.space.land ? a.space.land[0] : null, a => `<td class="num">${a.space.land ? fmt(a.space.land[0]) : "–"}</td>`],
+  ["+ per animal", a => a.space.land ? a.space.land[1] : null, a => `<td class="num">${a.space.land ? fmt(a.space.land[1]) : "–"}</td>`],
+  ["Group", a => a.group[1], a => `<td class="num">${range(a.group[0], a.group[1])}</td>`],
+  ["Temp °C", a => a.temp[0], a => `<td class="num">${range(a.temp[0], a.temp[1])}</td>`],
+  ["Barrier", a => a.barrier ? a.barrier.grade * 100 + a.barrier.h : null, a => `<td>${a.barrier ? "G" + a.barrier.grade + " · " + fmt(a.barrier.h) + " m" + (a.barrier.climb ? " · climb-proof" : "") : "–"}</td>`],
+  ["Compatible", a => a._compat || null, a => `<td class="num">${a._compat || "–"}</td>`],
+  ["Temperament", a => a._temperament, a => `<td>${esc(a.temperament || "–")}</td>`],
+  ["Food $", a => a.food || 0, a => `<td class="num">${fmt(a.food, 0)}</td>`],
+  ["Status", a => CONS_RANK[a.cons] ?? 9, a => `<td><span class="cons c-${consClass(a.cons)}" title="${esc(a.cons)}">${CONS_CODE[a.cons] || "–"}</span></td>`],
+  ["Class", a => a.cls, a => `<td>${esc(a.cls)}</td>`]
+];
+let tableSort = null;
+function table(list) {
+  if (tableSort) { const [ci, dir] = tableSort; const f = COLS[ci][1]; list = [...list].sort((a, b) => { const x = f(a), y = f(b); if (x == null || y == null) return x == null && y == null ? a.n.localeCompare(b.n) : (x == null ? 1 : -1); return (typeof x === "number" ? x - y : String(x).localeCompare(String(y))) * dir || a.n.localeCompare(b.n); }); }
+  return `<div class="tablewrap"><table><thead><tr>${COLS.map((c, i) => `<th scope="col"><button data-col="${i}"${tableSort && tableSort[0] === i ? ` data-dir="${tableSort[1] > 0 ? "▲" : "▼"}"` : ""}>${c[0]}</button></th>`).join("")}</tr></thead>
+    <tbody>${list.map(a => `<tr data-i="${a._i}" tabindex="0">${COLS.map(c => c[2](a)).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+/* active filters summary */
+function activeChips() {
+  const out = [];
+  const add = (label, clear) => out.push([label, clear]);
+  if (st.q) add(`“${st.q}”`, () => { st.q = ""; $("q").value = ""; });
+  SETS.forEach(k => st[k].forEach(v => add(`${LABELS[k]}: ${v}`, () => st[k].delete(v))));
+  if (st.walk !== "any") add(`Walk-through: ${st.walk === "yes" ? "yes" : "no"}`, () => st.walk = "any");
+  st.compat.forEach(j => add(`${st.compatMode === "thriving" ? "Thrives" : "Shares"} with ${A[j].n}`, () => st.compat = st.compat.filter(x => x !== j)));
+  if (st.hasCompat) add("Has compatible partners", () => st.hasCompat = false);
+  if (st.roofed) add("Roofed habitat", () => st.roofed = false);
+  if (st.climbproof) add("Climb-proof barriers", () => st.climbproof = false);
+  if (st.shoal) add("Shoal fish", () => st.shoal = false);
+  if (st.temp !== "" && st.temp != null) add(`Comfortable at ${st.temp} °C`, () => st.temp = "");
+  if (st.maxLand < LAND_MAX) add(`Land ≤ ${fmt(st.maxLand)} m²`, () => st.maxLand = LAND_MAX);
+  if (st.maxFood < FOOD_MAX) add(`Food ≤ $${fmt(st.maxFood, 0)}`, () => st.maxFood = FOOD_MAX);
+  if (st.maxGrade) add(`Barrier ≤ grade ${st.maxGrade}`, () => st.maxGrade = "");
+  if (st.waterOK) add("Water barrier allowed", () => st.waterOK = false);
+  if (st.morphs) add("Has colour morphs", () => st.morphs = false);
+  if (st.featured) add("Featured", () => st.featured = false);
+  return out;
+}
+
+/* render */
+let currentList = [];
+function syncControls() {
+  document.querySelectorAll(".chips[data-set]").forEach(g => { const k = g.dataset.set; g.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", st[k].has(c.dataset.v))); });
+  document.querySelectorAll("[data-walk]").forEach(b => b.setAttribute("aria-pressed", b.dataset.walk === st.walk));
+  document.querySelectorAll("[data-cm]").forEach(b => b.setAttribute("aria-pressed", b.dataset.cm === st.compatMode));
+  $("fRoofed").checked = st.roofed; $("fClimb").checked = st.climbproof; $("fShoal").checked = st.shoal; $("fHasCompat").checked = st.hasCompat;
+  $("fWater").checked = st.waterOK; $("fMorph").checked = st.morphs; $("fFeatured").checked = st.featured;
+  $("fTemp").value = st.temp ?? ""; $("fGrade").value = st.maxGrade || "";
+  $("fLand").value = st.maxLand; $("landOut").textContent = st.maxLand >= LAND_MAX ? "Any" : fmt(st.maxLand) + " m²";
+  $("fFood").value = st.maxFood; $("foodOut").textContent = st.maxFood >= FOOD_MAX ? "Any" : "$" + fmt(st.maxFood, 0);
+  $("sort").value = st.sort;
+  $("vCards").setAttribute("aria-pressed", st.view === "cards"); $("vTable").setAttribute("aria-pressed", st.view === "table");
+  $("qClear").hidden = !st.q;
+  $("compatPicked").innerHTML = st.compat.map(j => `<span class="tagx">${esc(A[j].n)}<button data-rm="${j}" aria-label="Remove ${esc(A[j].n)}">✕</button></span>`).join("");
+  const secCount = { encl: st.encl.size + st.roofed + st.climbproof + st.shoal, walk: st.walk !== "any" ? 1 : 0, compat: st.compat.length + st.hasCompat, biome: st.biome.size, cont: st.cont.size,
+    temp: st.temp !== "" && st.temp != null ? 1 : 0, space: (st.maxLand < LAND_MAX) + (st.maxFood < FOOD_MAX), barrier: (st.maxGrade ? 1 : 0) + st.waterOK, cls: st.cls.size, cons: st.cons.size,
+    temper: st.temper.size, mating: st.mating.size, roles: st.roles.size, terrain: st.terrain.size, reserve: st.reserve.size, pack: st.pack.size + st.morphs + st.featured };
+  document.querySelectorAll("details.fs").forEach(d => { const n = secCount[d.dataset.sec] || 0; const c = d.querySelector(".cnt"); c.hidden = !n; c.textContent = n; });
+  const total = Object.values(secCount).reduce((x, y) => x + y, 0) + (st.q ? 1 : 0);
+  $("filterToggle").textContent = total ? `Filters (${total})` : "Filters";
+}
+function render() {
+  syncControls();
+  currentList = A.filter(matches).sort(SORTS[st.sort] || SORTS.name);
+  const aboveTier = tierCap ? A.filter(a => tierOf(a) > tierCap).length : 0;
+  $("count").innerHTML = `${currentList.length} <small>of ${A.length} species${aboveTier ? ` · ${aboveTier} above ${modeName()} Tier ${tierCap} hidden` : ""}</small>`;
+  const chips = activeChips();
+  $("active").innerHTML = chips.map((c, i) => `<span class="achip">${esc(c[0])}<button data-ac="${i}" aria-label="Remove filter ${esc(c[0])}">✕</button></span>`).join("") + (chips.length > 1 ? `<button class="linkbtn" data-ac="all">Clear all</button>` : "");
+  $("active")._chips = chips;
+  if (!currentList.length) {
+    $("results").innerHTML = `<div class="empty"><h3>No species match</h3><p class="muted">Remove a filter above or reset to see all ${A.length} species.</p><button class="btn btn-orange" data-ac="all">Reset filters</button></div>`;
+  } else {
+    $("results").innerHTML = st.view === "table" ? table(currentList) : `<div class="grid">${currentList.map(card).join("")}</div>`;
+  }
+  save();
+}
+
+/* detail drawer */
+let lastFocus = null;
+function kv(rows) { return `<dl class="kv">${rows.filter(r => r && r[1] != null && r[1] !== "").map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>`; }
+const spaceTxt = (v) => v ? `${fmt(v[0])} m² <small>+${fmt(v[1])} per extra animal</small>` : null;
+function openDetail(i) {
+  const a = A[i];
+  lastFocus = document.activeElement;
+  const g = a.group;
+  const mixedRows = g[2] != null ? [["Mixed group", range(g[0], g[1])], ["Male-only group", range(g[0], g[4])], ["Female-only group", range(g[0], g[5])], ["Max per sex (mixed)", `${fmt(g[2])} male · ${fmt(g[3])} female`]] : [["Population", range(g[0], g[1])]];
+  const l = a.life, r = a.repro;
+  const lifespan = (l[0] || 0) + (l[1] || 0) + (l[2] || 0);
+  const relBtns = (arr, cls) => arr.length ? `<div class="rel">${arr.map(j => A[j]).sort((x, y) => x.n.localeCompare(y.n)).map(b => `<button class="${cls}" data-open="${b._i}">${esc(b.n)}</button>`).join("")}</div>` : `<p class="muted" style="margin:0">None</p>`;
+  const list = arr => arr.length ? `<div class="chiplist">${arr.map(x => `<span>${esc(x)}</span>`).join("")}</div>` : `<p class="muted" style="margin:0">None listed</p>`;
+  const sz = a.size[0] != null ? `${fmt(a.size[0])} m ♂ · ${fmt(a.size[1])} m ♀${a.size[2] ? ` <small>(${esc(a.size[2])})</small>` : ""}` : null;
+  const wt = a.weight && a.weight[0] != null ? `${fmt(a.weight[0])} kg ♂ · ${fmt(a.weight[1])} kg ♀` : null;
+  const b = a.barrier;
+  const url = "https://www.planetzoogame.com/2/zoopedia/" + encodeURIComponent(a.slug);
+  const habitatSec = a.encl === "Exhibit" ? `
+    <section class="sec"><h3>Exhibit</h3>
+      ${kv([["Population", range(g[0], g[1])], ["Temperature", range(a.temp[0], a.temp[1], " °C")], ["Humidity", a.hum ? range(a.hum[0], a.hum[1], "%") : null], ["Water", a.sal], ["Guests can walk through", a.walk ? "Yes" : "No"]])}
+      <div class="sub">Exhibit types</div>${list(a.exhibitTypes)}
+    </section>` : `
+    <section class="sec"><h3>Habitat</h3>
+      <div class="sub">Preferred group ranges</div>${kv(mixedRows)}
+      <div class="sub">Minimum space</div>${kv([["Land area", spaceTxt(a.space.land)], ["Shelter area", a.space.shelter != null ? fmt(a.space.shelter) + " m² <small>per animal</small>" : null], ["Aquatic area", spaceTxt(a.space.aquatic)], ["Deep water area", spaceTxt(a.space.deep)], ["Climbable area", spaceTxt(a.space.climb)], ["Flight area", spaceTxt(a.space.flight)]])}
+      ${b ? `<div class="sub">Barrier</div>${kv([["Strength", "Grade " + b.grade], ["Min height", fmt(b.h) + " m"], ["Climb-proof", b.climb ? "Yes" : "No"], ["Water barrier", b.water ? `Allowed${b.ww != null ? ` <small>${fmt(b.ww)} m wide · ${fmt(b.wd)} m deep</small>` : ""}` : "Not allowed"]])}` : ""}
+      <div class="sub">Environment</div>${kv([["Temperature", range(a.temp[0], a.temp[1], " °C")], ["Humidity", a.hum ? range(a.hum[0], a.hum[1], "%") : null], ["Water", a.sal], ["Roofed habitat", a.roofed ? "Required" : null]])}
+      ${a.terrain.length ? `<div class="sub">Terrain</div><div class="terrain">${a.terrain.map(t => `<div class="tr"><span>${esc(t.t)}${t.parent ? ` <small class="muted">(${esc(t.parent)})</small>` : ""}</span><span class="bar"><i style="left:${t.lo * 100}%;width:${Math.max((t.hi - t.lo) * 100, 0)}%"></i></span><span class="pct">${Math.round(t.lo * 100)}–${Math.round(t.hi * 100)}%</span></div>`).join("")}</div>` : ""}
+    </section>`;
+  $("drawer").innerHTML = `
+    <div class="d-head">
+      <button class="d-close" id="dClose" aria-label="Close">✕</button>
+      <div class="d-badges"><span class="badge b-${a.encl}">${a.encl}${a.shoal ? " · shoal fish" : ""}</span><span class="cons c-${consClass(a.cons)}">${CONS_CODE[a.cons] || "–"}</span>${a.walk ? `<span class="flag" style="background:rgba(255,255,255,.14)">${ICON_WALK}Walk-through</span>` : ""}</div>
+      <h2 id="dTitle">${esc(a.n)}</h2><p class="sci">${esc(a.sci)}</p>
+    </div>
+    <div class="d-body">
+      <div class="d-actions">
+        <a class="btn btn-orange" href="${url}" target="_blank" rel="noopener">Official Zoopedia page ↗</a>
+        ${a._compat ? `<button class="btn btn-ghost" data-compatwith="${a._i}">Show species it can share with</button>` : ""}
+      </div>
+      <section class="sec"><h3>Overview</h3>
+        ${kv([["Conservation status", esc(a.cons)], ["Class", esc(a.cls)], ["Order", esc(a.ord)], ["Family", esc(a.fam)], ["Genus", esc(a.gen)], ["Native range", esc(a.cont.join(", "))], ["Biomes", esc(a.biomes.join(", "))], ["Content", esc(a.pack)], ["Accreditation", `Franchise Tier ${a.tier + 1} · Career Tier ${a.ct}` + (tierCap && tierOf(a) > tierCap ? ` <small>(above your ${modeName()} Tier ${tierCap})</small>` : "")], ["Food cost", "$" + fmt(a.food, 2)], ["Size", sz], ["Weight", wt], ["Revealed", a.reveal ? new Date(a.reveal + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : null]])}
+        ${a.roles.length ? `<div class="sub">Ecosystem roles</div>${list(a.roles)}` : ""}
+      </section>
+      ${habitatSec}
+      <section class="sec"><h3>Behaviour and compatibility</h3>
+        ${kv([["Temperament", esc(a.temperament || "–")], ["Mating system", esc(a.mating || "–")], ["Offspring dispersal", esc(a.dispersal || "–")], ["Guests can walk through", a.walk ? "Yes" : "No"]])}
+        <div class="sub">Thriving relationships (${a._t.length})</div>${relBtns(a._t, "t")}
+        <div class="sub">Neutral relationships (${a._n.length})</div>${relBtns(a._n, "nn")}
+      </section>
+      <section class="sec"><h3>Lifecycle</h3>
+        ${kv([["Juvenile", l[0] != null ? fmt(l[0], 2) + " yr" : "–"], ["Adult", fmt(l[1], 2) + " yr"], ["Elderly", fmt(l[2], 2) + " yr"], ["Total lifespan", fmt(lifespan, 2) + " yr"], ["Sexual maturity", fmt(r[0], 2) + " yr"], ["Sexual sterility", r[1] != null ? fmt(r[1], 2) + " yr" : "Never (until death)"], ["Gestation / incubation", yrs(r[2])], ["Interbirth period", yrs(r[3])], ["Litter size", r[4] != null ? range(r[4], r[5]) : "–"]])}
+        <div class="sub">Colour morphs</div>${list(a.morphs)}
+      </section>
+      <section class="sec"><h3>Enrichment</h3>
+        <div class="sub">Habitat enrichment (${a.enrich.length})</div>${list(a.enrich)}
+        <div class="sub">Food enrichment (${a.foodEnrich.length})</div>${list(a.foodEnrich)}
+      </section>
+      <section class="sec"><h3>Release to the wild</h3>
+        ${kv([["Reserves", a.wild.reserves.length ? esc(a.wild.reserves.join(", ")) : "No reserve takes this species yet"], ["Release groups unlock", a.rel ? esc(a.rel.rl) : null], ["Fills once released", a.rel && a.rel.f.length ? esc(a.rel.f.join(", ")) : null]])}
+        ${a.rel && a.rel.g.length ? `<div class="sub">Release groups</div><div class="rgroups">${a.rel.g.map(g => `<div><span>${esc(g[0])}</span><span>${esc(fmtGroup(g[2]))}</span></div>`).join("")}</div>` : ""}
+        ${a.rel && a.rel.r.length ? `<div class="sub">Reserve requirements</div><div class="chiplist">${a.rel.r.map(r => `<span>${esc(r[1])}</span>`).join("")}</div>` : ""}
+        ${a.wild.reserves.length ? `<div class="d-actions">${a.wild.reserves.map(r => { const R = RESERVES.find(x => x.name === r); return R ? `<button class="btn btn-ghost" data-planner="${R.id}" data-focus="${a._i}">Plan in ${esc(R.short)}</button>` : ""; }).join("")}</div>` : ""}
+      </section>
+    </div>`;
+  $("drawer").hidden = false; $("backdrop").hidden = false; $("drawer").scrollTop = 0;
+  document.body.style.overflow = "hidden";
+  $("dClose").focus();
+}
+function closeDetail() {
+  $("drawer").hidden = true; $("backdrop").hidden = true; document.body.style.overflow = "";
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+}
+
+/* events */
+let qTimer;
+$("q").value = st.q;
+$("q").addEventListener("input", e => { clearTimeout(qTimer); qTimer = setTimeout(() => { st.q = e.target.value.trim(); render(); }, 120); });
+$("qClear").addEventListener("click", () => { st.q = ""; $("q").value = ""; render(); $("q").focus(); });
+document.getElementById("fsections").addEventListener("click", e => {
+  const chip = e.target.closest(".chip");
+  if (chip) { const k = chip.parentElement.dataset.set, v = chip.dataset.v; st[k].has(v) ? st[k].delete(v) : st[k].add(v); render(); return; }
+  const w = e.target.closest("[data-walk]"); if (w) { st.walk = w.dataset.walk; render(); return; }
+  const cm = e.target.closest("[data-cm]"); if (cm) { st.compatMode = cm.dataset.cm; render(); return; }
+  const rm = e.target.closest("[data-rm]"); if (rm) { st.compat = st.compat.filter(x => x !== Number(rm.dataset.rm)); render(); }
+});
+const bindCheck = (id, key) => $(id).addEventListener("change", e => { st[key] = e.target.checked; render(); });
+bindCheck("fRoofed", "roofed"); bindCheck("fClimb", "climbproof"); bindCheck("fShoal", "shoal"); bindCheck("fHasCompat", "hasCompat");
+bindCheck("fWater", "waterOK"); bindCheck("fMorph", "morphs"); bindCheck("fFeatured", "featured");
+$("compatAdd").addEventListener("change", e => { const v = e.target.value; if (v !== "" && !st.compat.includes(Number(v))) st.compat.push(Number(v)); e.target.value = ""; render(); });
+$("fTemp").addEventListener("input", e => { st.temp = e.target.value; render(); });
+$("fGrade").addEventListener("change", e => { st.maxGrade = e.target.value; render(); });
+$("fLand").addEventListener("input", e => { st.maxLand = Number(e.target.value); render(); });
+$("fFood").addEventListener("input", e => { st.maxFood = Number(e.target.value); render(); });
+$("sort").addEventListener("change", e => { st.sort = e.target.value; tableSort = null; render(); });
+$("vCards").addEventListener("click", () => { st.view = "cards"; render(); });
+$("vTable").addEventListener("click", () => { st.view = "table"; render(); });
+$("resetAll").addEventListener("click", () => { const keep = { view: st.view }; st = fresh(); Object.assign(st, keep); $("q").value = ""; tableSort = null; render(); });
+document.addEventListener("click", e => {
+  const ac = e.target.closest("[data-ac]");
+  if (ac) { if (ac.dataset.ac === "all") { $("resetAll").click(); } else { $("active")._chips[Number(ac.dataset.ac)][1](); render(); } return; }
+  const c = e.target.closest(".card, tbody tr[data-i]"); if (c) { openDetail(Number(c.dataset.i)); return; }
+  const th = e.target.closest("th button[data-col]");
+  if (th) { const ci = Number(th.dataset.col); tableSort = tableSort && tableSort[0] === ci ? [ci, -tableSort[1]] : [ci, 1]; render(); return; }
+  const op = e.target.closest("[data-open]"); if (op) { openDetail(Number(op.dataset.open)); return; }
+  const cw = e.target.closest("[data-compatwith]"); if (cw) { st.compat = [Number(cw.dataset.compatwith)]; st.compatMode = "any"; closeDetail(); render(); document.querySelector('details[data-sec="compat"]').open = true; window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+  if (e.target.id === "dClose" || e.target.id === "backdrop") closeDetail();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { if (!$("drawer").hidden) closeDetail(); else if ($("filters").classList.contains("open")) $("filters").classList.remove("open"); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".card, tbody tr[data-i]")) { e.preventDefault(); openDetail(Number(e.target.dataset.i)); }
+});
+$("filterToggle").addEventListener("click", () => { $("filters").classList.add("open"); $("fClose").focus(); });
+$("fClose").addEventListener("click", () => $("filters").classList.remove("open"));
+
+/* ---------- reserve planner ---------- */
+const ECO = DATA.eco;
+let tierCap = 0, tierMode = "franchise";
+function tierOf(a) { return tierMode === "career" ? a.ct : a.tier + 1; }
+function modeName() { return tierMode === "career" ? "Career" : "Franchise"; }
+const RESERVES = [
+  { id: "grv", name: "Great Rift Valley Reserve", short: "Great Rift Valley", biome: "Grassland", region: "Africa" },
+  { id: "tz", name: "Tanzania Reserve", short: "Tanzania", biome: "Grassland", region: "Africa" },
+  { id: "sum", name: "Sumatra Reserve", short: "Sumatra", biome: "Tropical", region: "Asia" },
+  { id: "sco", name: "Scottish Highlands", short: "Scottish Highlands", biome: "Taiga", region: "Europe" },
+  { id: "swe", name: "Sweden Reserve", short: "Sweden", biome: "Taiga", region: "Europe" },
+  { id: "pol", name: "Poland Reserve", short: "Poland", biome: "Temperate", region: "Europe" }
+];
+function fmtGroup(s) { return String(s).replace(/(\d+) to (\d+)/g, "$1–$2"); }
+function ecoSlug(name, res) {
+  if (name === "Lake") return res.biome === "Temperate" ? "lake-temperate" : res.biome === "Taiga" ? (res.id === "sco" ? "lake-loch" : "lake-taiga") : null;
+  if (name === "Lake (Loch)") return res.id === "sco" ? "lake-loch" : null;
+  if (name === "Grassland" && res.biome === "Tropical") return "grassland-tropical";
+  return Object.keys(ECO).find(s => ECO[s].n === name && ECO[s].biome === res.biome) || null;
+}
+function parseReq(a, res) {
+  const out = { clauses: [], roles: [], nests: [] };
+  if (!a.rel) return out;
+  a.rel.r.forEach(([t, req]) => {
+    if (t === "Ecosystems Required") {
+      const txt = req.startsWith("Either ") ? req.slice(7) : req;
+      const opts = txt.split(" or ").map(o => { const fl = o.startsWith("Flourishing "); return { s: ecoSlug(fl ? o.slice(12) : o, res), fl }; }).filter(o => o.s);
+      if (opts.length) out.clauses.push(opts);
+    } else if (t === "Species Roles Required") out.roles.push(req);
+    else if (t === "Nature Requirements") out.nests.push(req);
+  });
+  return out;
+}
+function evaluate(P, rel) {
+  const fills = new Set();
+  rel.forEach(i => (A[i].rel ? A[i].rel.f : []).forEach(r => fills.add(r)));
+  const flour = s => ECO[s].ro.every(r => fills.has(r));
+  const st = {}, miss = {};
+  P.sp.forEach(i => {
+    if (rel.has(i)) { st[i] = "done"; miss[i] = []; return; }
+    const R = P.req[i], m = [];
+    R.roles.forEach(role => { if (!fills.has(role)) m.push({ k: "role", role }); });
+    R.clauses.forEach(cl => {
+      if (cl.some(o => !o.fl)) return;
+      if (cl.some(o => flour(o.s))) return;
+      m.push({ k: "flour", opts: cl.map(o => o.s) });
+    });
+    miss[i] = m; st[i] = tierCap && tierOf(A[i]) > tierCap ? "locked" : m.length ? "blocked" : "ready";
+  });
+  return { fills, flour, st, miss };
+}
+function wavesFor(P) {
+  if (P._w && P._wt === tierMode + tierCap) return P._w;
+  const wv = {}, rel = new Set();
+  for (let w = 1; w < 12; w++) {
+    const ev = evaluate(P, rel);
+    const nxt = P.sp.filter(i => ev.st[i] === "ready");
+    if (!nxt.length) break;
+    nxt.forEach(i => { wv[i] = w; rel.add(i); });
+  }
+  P._w = wv; P._wt = tierMode + tierCap; return wv;
+}
+const PLAN = {};
+RESERVES.forEach(res => {
+  const sp = A.filter(a => a.wild.reserves.includes(res.name)).map(a => a._i).sort((x, y) => A[x].n.localeCompare(A[y].n));
+  const req = {}; sp.forEach(i => req[i] = parseReq(A[i], res));
+  const ecos = new Map();
+  sp.forEach(i => req[i].clauses.forEach(cl => cl.forEach(o => { if (!ecos.has(o.s)) ecos.set(o.s, []); ecos.get(o.s).push({ i, fl: o.fl }); })));
+  PLAN[res.id] = { res, sp, req, ecos, wave: {} };
+});
+const providers = (P, role) => P.sp.filter(j => A[j].rel && A[j].rel.f.includes(role));
+
+let rv = { view: "species", res: "grv", released: {}, tier: 0, mode: "franchise" };
+try { const s = JSON.parse(localStorage.getItem("zf-rv") || "null"); if (s && s.released) rv = Object.assign(rv, s); } catch (e) {}
+if (!PLAN[rv.res]) rv.res = "grv";
+rv.tier = [0, 1, 2, 3, 4, 5].includes(Number(rv.tier)) ? Number(rv.tier) : 0;
+rv.mode = rv.mode === "career" ? "career" : "franchise";
+tierCap = rv.tier; tierMode = rv.mode;
+const saveRv = () => { try { localStorage.setItem("zf-rv", JSON.stringify(rv)); } catch (e) {} };
+const relSet = id => new Set(PLAN[id].sp.filter(i => (rv.released[id] || []).includes(A[i].n)));
+const ST_LABEL = { done: "Released", ready: "Ready now", blocked: "Waiting" };
+const stLabel = (i, s) => s === "locked" ? `Tier ${tierOf(A[i])} needed` : ST_LABEL[s];
+const ST_RANK = { ready: 0, blocked: 1, done: 2, locked: 3 };
+
+/* plan import / export */
+let ioMode = null, ioPending = null, ioMsg = null, dl = null;
+(async () => {
+  try { dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch (e) { dl = null; }
+  if (ioMode === "export") renderIO();
+})();
+const RES_BY_ID = Object.fromEntries(RESERVES.map(r => [r.id, r]));
+function releasedByName(map) {
+  const out = {};
+  RESERVES.forEach(r => { const valid = new Set(PLAN[r.id].sp.map(i => A[i].n)); const l = (map[r.id] || []).filter(n => valid.has(n)); if (l.length) out[r.name] = [...new Set(l)].sort(); });
+  return out;
+}
+function planText() {
+  return JSON.stringify({ app: "Zoopedia Finder", kind: "reserve-plan", version: 1, saved: new Date().toISOString(), mode: rv.mode, tier: rv.tier || null, current: RES_BY_ID[rv.res].name, released: releasedByName(rv.released) }, null, 2);
+}
+function planSummary(map) {
+  const parts = RESERVES.filter(r => (map[r.id] || []).length).map(r => `${r.short}: ${map[r.id].length} released`);
+  return parts.length ? parts.join(" · ") : "Nothing ticked as released yet";
+}
+function parsePlan(text) {
+  let o;
+  try { o = JSON.parse(text); } catch (e) { throw new Error("That isn't plan text from this page. Export a plan here first, then import that file or text."); }
+  if (!o || o.kind !== "reserve-plan" || !o.released || typeof o.released !== "object") throw new Error("That file isn't a reserve plan exported from this page.");
+  const released = {}, unknown = [];
+  Object.entries(o.released).forEach(([k, names]) => {
+    const r = RESERVES.find(x => x.name === k || x.id === k || x.short === k);
+    if (!r) { unknown.push(String(k)); return; }
+    if (!Array.isArray(names)) return;
+    const valid = new Set(PLAN[r.id].sp.map(i => A[i].n));
+    names.forEach(n => { if (typeof n === "string" && valid.has(n)) (released[r.id] = released[r.id] || []).push(n); else unknown.push(`${n} (${r.short})`); });
+    if (released[r.id]) released[r.id] = [...new Set(released[r.id])];
+  });
+  const cur = RESERVES.find(x => x.name === o.current || x.id === o.current);
+  const tier = "tier" in o ? ([1, 2, 3, 4, 5].includes(Number(o.tier)) ? Number(o.tier) : 0) : undefined;
+  const mode = o.mode === "career" || o.mode === "franchise" ? o.mode : undefined;
+  return { released, current: cur ? cur.id : null, unknown, saved: typeof o.saved === "string" ? o.saved : null, tier, mode };
+}
+function renderIO() {
+  const box = $("rvIO");
+  if (!ioMode) { box.hidden = true; box.innerHTML = ""; return; }
+  box.hidden = false;
+  const msg = ioMsg ? `<p class="${ioMsg.ok ? "io-ok" : "io-err"}" role="status">${esc(ioMsg.text)}</p>` : "";
+  if (ioMode === "export") {
+    box.innerHTML = `<div class="io-head"><h3>Export plan</h3><button class="io-x" data-io="close" aria-label="Close">✕</button></div>
+      <p>Ticks are kept in this browser only. Save the plan as a file, or copy it as text, then import it here later to carry on where you left off.</p>
+      <p class="rmeta"><b>Contains</b> ${esc(planSummary(rv.released))} · ${modeName()}${rv.tier ? ` Tier ${rv.tier}` : ", no tier limit"}</p>
+      <div class="rv-actions">${dl ? `<button class="btn btn-orange" data-io="save">Save plan file</button>` : ""}<button class="btn btn-ghost" data-io="copy">Copy as text</button></div>
+      ${msg}
+      <details id="ioOutWrap"><summary>Show plan text</summary><textarea id="ioOut" rows="9" readonly aria-label="Plan text">${esc(planText())}</textarea></details>`;
+  } else if (ioPending) {
+    const p = ioPending;
+    box.innerHTML = `<div class="io-head"><h3>Import plan</h3><button class="io-x" data-io="close" aria-label="Close">✕</button></div>
+      <p><b>This plan has</b> ${esc(planSummary(p.released))}${p.saved ? `, exported ${esc(new Date(p.saved).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }))}` : ""}.</p>
+      ${p.tier !== undefined || p.mode ? `<p><b>Accreditation</b> ${p.mode === "career" ? "Career" : p.mode === "franchise" ? "Franchise" : modeName()}${p.tier ? ` Tier ${p.tier}` : ", no tier limit"} <span class="muted">(yours now: ${modeName()}${rv.tier ? ` Tier ${rv.tier}` : ", no tier limit"})</span></p>` : ""}
+      <p><b>Your current plan</b> ${esc(planSummary(rv.released))}. Importing replaces it for every reserve.</p>
+      ${p.unknown.length ? `<p class="io-err">Skipped ${p.unknown.length} entr${p.unknown.length === 1 ? "y" : "ies"} this page doesn't recognise: ${esc(p.unknown.slice(0, 8).join(", "))}${p.unknown.length > 8 ? "…" : ""}</p>` : ""}
+      <div class="rv-actions"><button class="btn btn-orange" data-io="apply">Replace my plan</button><button class="btn btn-ghost" data-io="back">Cancel</button></div>`;
+  } else {
+    box.innerHTML = `<div class="io-head"><h3>Import plan</h3><button class="io-x" data-io="close" aria-label="Close">✕</button></div>
+      <p>Load a plan you exported from this page. You'll see what it contains before anything changes.</p>
+      <label class="io-file"><span class="lbl">Plan file</span><input type="file" id="ioFile" accept=".json,application/json,text/plain"></label>
+      <span class="io-or">or paste the plan text</span>
+      <textarea id="ioIn" rows="6" aria-label="Paste plan text" placeholder='{"kind": "reserve-plan", …}'></textarea>
+      <div class="rv-actions"><button class="btn btn-ghost" data-io="readtext">Read pasted text</button></div>
+      ${msg}`;
+  }
+}
+function stageImport(text) {
+  try { ioPending = parsePlan(text); ioMsg = null; }
+  catch (err) { ioPending = null; ioMsg = { ok: false, text: err.message }; }
+  renderIO();
+}
+async function ioAction(act) {
+  if (act === "export" || act === "import") { ioMode = ioMode === act && !ioPending ? null : act; ioPending = null; ioMsg = null; renderIO(); if (ioMode) $("rvIO").scrollIntoView({ block: "nearest" }); return; }
+  if (act === "close") { ioMode = null; ioPending = null; ioMsg = null; renderIO(); return; }
+  if (act === "back") { ioPending = null; ioMsg = null; renderIO(); return; }
+  if (act === "readtext") { const t = ($("ioIn").value || "").trim(); if (!t) { ioMsg = { ok: false, text: "Paste the plan text first." }; renderIO(); return; } stageImport(t); return; }
+  if (act === "apply" && ioPending) {
+    rv.released = ioPending.released; if (ioPending.current) rv.res = ioPending.current;
+    if (ioPending.mode) rv.mode = tierMode = ioPending.mode;
+    if (ioPending.tier !== undefined) rv.tier = tierCap = ioPending.tier;
+    if (ioPending.mode || ioPending.tier !== undefined) { syncTier(); render(); }
+    saveRv(); const sum = planSummary(rv.released);
+    ioPending = null; ioMsg = { ok: true, text: `Plan imported. ${sum}${rv.tier ? `, ${modeName()} Tier ${rv.tier}` : ""}.` }; renderReserves(); renderIO(); return;
+  }
+  if (act === "copy") {
+    const text = planText();
+    try { await navigator.clipboard.writeText(text); ioMsg = { ok: true, text: "Plan copied. Paste it somewhere safe, such as a note." }; renderIO(); }
+    catch (e) { ioMsg = { ok: false, text: "Copying isn't allowed here. Select the plan text below and copy it." }; renderIO(); $("ioOutWrap").open = true; $("ioOut").focus(); $("ioOut").select(); }
+    return;
+  }
+  if (act === "save" && dl) {
+    const d = new Date(), pad = n => String(n).padStart(2, "0");
+    try {
+      const r = await dl.save({ filename: `zoopedia-reserve-plan-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`, data: planText() });
+      ioMsg = { ok: true, text: r && r.status === "delivered" ? "Plan sent to the destination you chose." : "Plan file saved." };
+    } catch (err) {
+      const code = err && err.code;
+      if (code === "declined") ioMsg = { ok: false, text: "Save cancelled." };
+      else if (code === "rate_limited") ioMsg = { ok: false, text: "A save prompt is already open. Finish that one first." };
+      else { if (["unavailable", "not_granted", "capability_disabled", "capability_removed"].includes(code)) dl = null; ioMsg = { ok: false, text: "Saving files isn't available here. Use Copy as text instead." }; }
+    }
+    renderIO();
+  }
+}
+
+function pvChips(list, ev, max = 99) {
+  const shown = list.slice(0, max);
+  return shown.map(j => `<button class="pv pv-${ev.st[j]}" data-open="${j}" title="${esc(A[j].n)}: ${stLabel(j, ev.st[j])}">${esc(A[j].n)}</button>`).join("") + (list.length > max ? `<span class="muted">+${list.length - max} more</span>` : "");
+}
+function tierNote(pv, ev) {
+  if (!tierCap || !pv.length || !pv.every(j => ev.st[j] === "locked")) return "";
+  return `<span class="io-err" style="font-size:12.5px">only available from Tier ${Math.min(...pv.map(j => tierOf(A[j])))}</span>`;
+}
+function roleLine(P, ev, role, self) {
+  const ok = ev.fills.has(role);
+  const pv = providers(P, role).filter(j => j !== self);
+  const list = ok ? pv.filter(j => ev.st[j] === "done") : pv.sort((x, y) => ST_RANK[ev.st[x]] - ST_RANK[ev.st[y]] || A[x].n.localeCompare(A[y].n));
+  return `<div class="req-line"><span class="ic ${ok ? "ic-ok" : "ic-no"}">${ok ? "✓" : "!"}</span><div><span>${ok ? "" : "Needs "}<b>${esc(role)}</b>${ok ? " present" : " in the reserve:"}</span>${pvChips(list, ev, ok ? 3 : 8)}${!ok ? tierNote(pv, ev) : ""}</div></div>`;
+}
+function ecoLine(P, ev, cl, self) {
+  const names = cl.map(o => esc(ECO[o.s].n));
+  if (cl.some(o => !o.fl)) {
+    return `<div class="req-line"><span class="ic ic-build" title="You build this">▢</span><div><span>Build ${cl.map(o => (o.fl ? "flourishing " : "") + esc(ECO[o.s].n)).join(" or ")}</span></div></div>`;
+  }
+  const ok = cl.some(o => ev.flour(o.s));
+  if (ok) return `<div class="req-line"><span class="ic ic-ok">✓</span><div><span><b>${names.join(" or ")}</b> flourishing</span></div></div>`;
+  const parts = cl.map(o => {
+    const m = ECO[o.s].ro.filter(r => !ev.fills.has(r));
+    return `<span>${cl.length > 1 ? `<b>${esc(ECO[o.s].n)}</b> missing ` : "missing "}</span>` + m.map(r => { const pv = providers(P, r).filter(j => j !== self); return `<span class="muted">${esc(r)}:</span>${pvChips(pv, ev, 6)}${tierNote(pv, ev)}`; }).join("");
+  }).join(`<span class="muted">·</span>`);
+  return `<div class="req-line"><span class="ic ic-no">!</span><div><span>Needs <b>${names.join(" or ")}</b> flourishing,</span>${parts}</div></div>`;
+}
+function spRow(P, ev, i, unlocks) {
+  const a = A[i], R = P.req[i], s = ev.st[i];
+  const lines = [...R.roles.map(r => roleLine(P, ev, r, i)), ...R.clauses.map(cl => ecoLine(P, ev, cl, i))];
+  const groups = a.rel ? a.rel.g.map(g => `${esc(g[0])} <span class="muted">(${esc(fmtGroup(g[2]))})</span>`).join(" · ") : "";
+  return `<article class="sprow${s === "done" ? " is-done" : ""}" id="sp-${i}">
+    <div class="sprow-top">
+      <label class="relchk"><input type="checkbox" data-rel="${i}"${s === "done" ? " checked" : ""}> Released</label>
+      <button class="sp-name" data-open="${i}">${esc(a.n)}</button>
+      ${s === "locked" ? "" : `<span class="step" title="Earliest step in the suggested order at your tier">Step ${P.wave[i] || "–"}</span>`}
+      <span class="stp stp-${s}">${stLabel(i, s)}</span>
+    </div>
+    ${s !== "done" && lines.length ? `<div class="req">${lines.join("")}</div>` : ""}
+    ${s === "ready" && unlocks && unlocks.length ? `<div class="unlocks">Releasing this unlocks <b>${unlocks.map(j => esc(A[j].n)).join(", ")}</b></div>` : ""}
+    <div class="rmeta">${groups ? `<span><b>Groups</b> ${groups}</span>` : ""}${a.rel ? `<span><b>Research</b> ${esc(a.rel.rl)}</span>` : ""}${R.nests.length ? `<span><b>Nest</b> ${esc(R.nests.join(", "))}</span>` : ""}${a.rel && a.rel.f.length ? `<span><b>Fills</b> ${esc(a.rel.f.join(", "))}</span>` : ""}</div>
+  </article>`;
+}
+function ecoCard(P, ev, slug) {
+  const e = ECO[slug], need = P.ecos.get(slug) || [];
+  const ok = ev.flour(slug), have = e.ro.filter(r => ev.fills.has(r)).length;
+  const flNeed = [...new Set(need.filter(n => n.fl).map(n => n.i))], estNeed = [...new Set(need.filter(n => !n.fl).map(n => n.i))].filter(i => !flNeed.includes(i));
+  const objs = e.o.filter(o => o.length === 2);
+  return `<article class="ecocard">
+    <div class="eco-top"><h3>${esc(e.n)}</h3><span class="flr ${ok ? "flr-yes" : "flr-no"}">${ok ? "Flourishing" : `${have} of ${e.ro.length} roles`}</span></div>
+    <div class="req">${e.ro.map(r => { const has = ev.fills.has(r); const pv = providers(P, r); const list = has ? pv.filter(j => ev.st[j] === "done") : pv; return `<div class="req-line"><span class="ic ${has ? "ic-ok" : "ic-no"}">${has ? "✓" : "!"}</span><div><b>${esc(r)}</b>${list.length ? pvChips(list, ev, has ? 3 : 6) : `<span class="muted">no species in this reserve</span>`}</div></div>`; }).join("")}</div>
+    ${flNeed.length ? `<p class="rmeta" style="margin:0"><b>Must flourish for</b> ${flNeed.map(i => esc(A[i].n)).join(", ")}</p>` : ""}
+    ${estNeed.length ? `<p class="rmeta" style="margin:0"><b>Habitat for</b> ${estNeed.map(i => esc(A[i].n)).join(", ")}</p>` : ""}
+    <details><summary>What to build</summary><ul>
+      ${e.terrain ? `<li>Terrain: ${esc(e.terrain)}</li>` : ""}${e.also ? `<li>${esc(e.also)}</li>` : ""}
+      ${objs.map(o => `<li>${esc(o[0])}: ${esc(o[1])}</li>`).join("")}
+    </ul></details>
+  </article>`;
+}
+function renderReserves() {
+  const P = PLAN[rv.res], rel = relSet(rv.res);
+  P.wave = wavesFor(P);
+  const ev = evaluate(P, rel);
+  $("rvPicker").innerHTML = RESERVES.map(r => {
+    const PP = PLAN[r.id], done = relSet(r.id).size;
+    return `<button class="rpick" data-res="${r.id}" aria-pressed="${r.id === rv.res}"><b>${esc(r.short)}</b><span>${r.region} · ${r.biome} · ${PP.sp.length} species</span><span>${done} released</span><span class="mbar"><i style="width:${PP.sp.length ? done / PP.sp.length * 100 : 0}%"></i></span></button>`;
+  }).join("");
+  const ready = P.sp.filter(i => ev.st[i] === "ready"), blocked = P.sp.filter(i => ev.st[i] === "blocked"), done = P.sp.filter(i => ev.st[i] === "done"), locked = P.sp.filter(i => ev.st[i] === "locked");
+  const unlocks = {};
+  ready.forEach(j => { const r2 = new Set(rel); r2.add(j); const e2 = evaluate(P, r2); unlocks[j] = blocked.filter(i => e2.st[i] === "ready"); });
+  const ecoSlugs = [...P.ecos.keys()];
+  const flourN = ecoSlugs.filter(s => ev.flour(s)).length;
+  $("rvSummary").innerHTML = `<div><h2>${esc(P.res.name)}</h2><p>${P.res.biome} biome${tierCap ? `, planned for ${modeName()} Tier ${tierCap}` : ""}. Tick each species once you've released it and the plan updates.</p></div>
+    <div class="rv-stats">
+      <div class="rv-stat"><b>${done.length}/${P.sp.length}</b><span>Released</span></div>
+      <div class="rv-stat"><b>${ready.length}</b><span>Ready now</span></div>
+      <div class="rv-stat"><b>${blocked.length}</b><span>Waiting</span></div>
+      ${tierCap ? `<div class="rv-stat"><b>${locked.length}</b><span>Higher tier</span></div>` : ""}
+      <div class="rv-stat"><b>${flourN}/${ecoSlugs.length}</b><span>Ecosystems flourishing</span></div>
+    </div>
+    <div class="rv-actions"><button class="btn btn-orange" data-io="export">Export plan</button><button class="btn btn-ghost" data-io="import">Import plan</button>${done.length ? `<button class="linkbtn" id="rvClear">Clear ticks</button>` : ""}</div>`;
+  if (ioMode === "export") renderIO();
+  const byStep = (x, y) => (P.wave[x] || 9) - (P.wave[y] || 9) || A[x].n.localeCompare(A[y].n);
+  ready.sort((x, y) => unlocks[y].length - unlocks[x].length || byStep(x, y));
+  blocked.sort(byStep); done.sort(byStep);
+  $("rvSpecies").innerHTML = `
+    <h2>Ready to release <small>${ready.length}</small></h2>
+    <p class="rv-hint">Every animal prerequisite is met. You still need the ecosystems built, the right release group, its research level and any nest.</p>
+    <div class="legend"><span>Species chips:</span><span class="pv pv-done">released</span><span class="pv pv-ready">ready now</span><span class="pv pv-blocked">still waiting</span>${tierCap ? `<span class="pv pv-locked">above your tier</span>` : ""}</div>
+    ${ready.length ? ready.map(i => spRow(P, ev, i, unlocks[i])).join("") : `<div class="empty-sm">Nothing is ready. Release the species marked in the waiting list first.</div>`}
+    <h2>Waiting on other animals <small>${blocked.length}</small></h2>
+    ${blocked.length ? blocked.map(i => spRow(P, ev, i)).join("") : `<div class="empty-sm">No species are waiting on prerequisites.</div>`}
+    ${locked.length ? `<details class="done-list"><summary>Needs a higher tier (${locked.length})</summary><div class="done-grid">${locked.sort((x, y) => tierOf(A[x]) - tierOf(A[y]) || A[x].n.localeCompare(A[y].n)).map(i => spRow(P, ev, i)).join("")}</div></details>` : ""}
+    ${done.length ? `<details class="done-list"><summary>Released (${done.length})</summary><div class="done-grid">${done.map(i => spRow(P, ev, i)).join("")}</div></details>` : ""}`;
+  const order = ecoSlugs.sort((x, y) => (ev.flour(x) - ev.flour(y)) || ((P.ecos.get(y) || []).some(n => n.fl) - (P.ecos.get(x) || []).some(n => n.fl)) || ECO[x].n.localeCompare(ECO[y].n));
+  $("rvEcos").innerHTML = `<h2>Ecosystems <small>${flourN} of ${ecoSlugs.length} flourishing</small></h2>
+    <p class="rv-hint">An ecosystem flourishes once released animals fill all of its roles. Some predators and big herbivores need one flourishing before they can go in.</p>
+    ${order.map(s => ecoCard(P, ev, s)).join("")}`;
+}
+function setView(v, opts = {}) {
+  rv.view = v; saveRv();
+  const isR = v === "reserves";
+  $("tabSpecies").setAttribute("aria-selected", !isR); $("tabReserves").setAttribute("aria-selected", isR);
+  $("speciesView").hidden = isR; $("searchBox").hidden = isR; $("reserveView").hidden = !isR;
+  $("heroText").textContent = isR ? "Work out what to release next in each wildlife reserve. The planner checks which roles and flourishing ecosystems each species needs, and which released animals provide them." : "Every animal in the Planet Zoo 2 Zoopedia with its habitat requirements, compatibility, walk-through rules and lifecycle stats. Search anything, then narrow it down with the filters.";
+  try { history.replaceState(null, "", isR ? "#reserves" : "#species"); } catch (e) {}
+  if (isR) renderReserves();
+  if (isR && opts.focus != null) { const el = document.getElementById("sp-" + opts.focus); if (el) el.scrollIntoView({ block: "center" }); }
+}
+function syncTier() {
+  $("tierSel").value = String(tierCap);
+  $("modeSel").value = tierMode;
+  $("tierPick").classList.toggle("on", !!tierCap);
+}
+function setTier(t, mode) {
+  rv.tier = tierCap = t;
+  if (mode) rv.mode = tierMode = mode;
+  saveRv(); syncTier();
+  render();
+  if (rv.view === "reserves") renderReserves();
+  if (ioMode) renderIO();
+}
+syncTier();
+$("tierSel").addEventListener("change", e => setTier(Number(e.target.value) || 0));
+$("modeSel").addEventListener("change", e => setTier(tierCap, e.target.value === "career" ? "career" : "franchise"));
+$("tabSpecies").addEventListener("click", () => setView("species"));
+$("tabReserves").addEventListener("click", () => setView("reserves"));
+$("reserveView").addEventListener("change", e => {
+  const cb = e.target.closest("[data-rel]"); if (!cb) return;
+  const n = A[Number(cb.dataset.rel)].n, list = new Set(rv.released[rv.res] || []);
+  cb.checked ? list.add(n) : list.delete(n);
+  rv.released[rv.res] = [...list]; saveRv(); renderReserves();
+});
+$("reserveView").addEventListener("change", async e => {
+  if (e.target.id !== "ioFile" || !e.target.files || !e.target.files[0]) return;
+  const f = e.target.files[0];
+  if (f.size > 1024 * 1024) { ioMsg = { ok: false, text: "That file is too large to be a plan from this page." }; renderIO(); return; }
+  try { stageImport(await f.text()); } catch (err) { ioMsg = { ok: false, text: "Couldn't read that file. Try pasting the plan text instead." }; renderIO(); }
+});
+$("reserveView").addEventListener("click", e => {
+  const io = e.target.closest("[data-io]"); if (io) { ioAction(io.dataset.io); return; }
+  const p = e.target.closest("[data-res]"); if (p) { rv.res = p.dataset.res; saveRv(); renderReserves(); return; }
+  if (e.target.id === "rvClear") { rv.released[rv.res] = []; saveRv(); renderReserves(); }
+});
+document.addEventListener("click", e => {
+  const pl = e.target.closest("[data-planner]"); if (!pl) return;
+  rv.res = pl.dataset.planner; closeDetail(); setView("reserves", { focus: pl.dataset.focus });
+});
+
+/* meta */
+const exp = new Date(DATA.exported);
+const lastReveal = A.map(a => a.reveal).sort().pop();
+const dfmt = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+$("bandMeta").textContent = `${A.length} species · data export ${dfmt(exp)}`;
+$("footMeta").textContent = `Source export dated ${dfmt(exp)}, covering reveals up to ${dfmt(lastReveal + "T00:00:00Z")}. ${A.filter(a => a.walk).length} species allow guests to walk through; ${A.filter(a => a._compat).length} have at least one compatible partner.`;
+render();
+setView(location.hash === "#reserves" ? "reserves" : location.hash === "#species" ? "species" : rv.view);
+</script>
