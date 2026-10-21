@@ -25,7 +25,7 @@ Owner: Paul de Graaff. Built in a Claude Chat session 19–21 Oct 2026, moved in
 
 | Tool | Status |
 |---|---|
-| Zoopedia Finder R1.0.1 | **R1.0.0 released**: published artifact https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM, version 9; `main` equals it byte for byte (host wrapper aside, verified 21 Oct 2026). **R1.0.1 (CR-001, 21 Oct 2026) built, not yet released**: version label in the masthead, display only (rule spec §0a). 13-test jsdom smoke suite, passing. Rule spec `docs/Zoopedia_Finder_Rules.md` v1.1. EN only. |
+| Zoopedia Finder R1.0.1 | **Released 21 Oct 2026**: published artifact https://claude.ai/artifact/Qh8ktsp29rPzG4j6bB3HEM, version 10 (R1.0.0 = version 9); `main` equals it byte for byte (host wrapper aside, checked after publishing). R1.0.1 = CR-001, version label in the masthead, display only (rule spec §0a). 13-test jsdom smoke suite, passing. Rule spec `docs/Zoopedia_Finder_Rules.md` v1.1. EN only. |
 
 Highest CR: **CR-001**.
 
