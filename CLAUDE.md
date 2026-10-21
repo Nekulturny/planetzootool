@@ -58,8 +58,8 @@ Highest CR: none yet — the next change is **CR-001**.
 
 ## Repository and GitHub
 
-- Remote: `origin` = `github.com/Nekulturny/zoopedia-finder` (private) — **not yet created**,
-  see `BACKLOG.md`. `main` is the released state and always equals the published artifact.
+- Remote: `origin` = `github.com/Nekulturny/planetzootool` (private, created by Paul
+  21 Oct 2026). `main` is the released state and always equals the published artifact.
   Work on a branch; fast-forward into `main` when Paul approves.
 - **Push only when Paul asks.** Never force-push, rewrite history or delete a remote ref
   without his explicit go-ahead for that specific action.
