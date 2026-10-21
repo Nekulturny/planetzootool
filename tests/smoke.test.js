@@ -34,6 +34,10 @@ function test(name, fn) { fn(); passed++; console.log("ok -", name); }
 
 test("page loads without script errors", () => assert.deepEqual(errors, []));
 
+// CR-001: version label in the masthead (rule spec §0a)
+test("masthead shows the version, species count and export date", () =>
+  assert.equal(text("bandMeta"), "R1.0.1 · 136 species · data export 5 Oct 2026"));
+
 test("species tab shows all 136 species", () => assert.match(text("count"), /^136 of 136 species/));
 
 test("walk-through filter", () => {

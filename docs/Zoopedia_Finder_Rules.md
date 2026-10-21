@@ -1,6 +1,8 @@
 # Zoopedia Finder — Rule Specification
 
-**Version:** 1.0 — 21 Oct 2026. Written from the R1.0.0 source (`src/template.html`,
+**Version:** 1.1 — 21 Oct 2026. v1.1 adds §0a, the version label in the masthead (R1.0.1,
+CR-001).
+1.0 — 21 Oct 2026. Written from the R1.0.0 source (`src/template.html`,
 `scripts/build.py`) and the Claude Chat handover of 21 Oct 2026, when the project moved into
 Git. It records the rules as built; no rule was changed in writing it. Statements about the
 game itself come from the two data sources (§1) and are **not independently verified**: where
@@ -21,6 +23,17 @@ mode. Two tabs share one **Accreditation** control (§3):
 
 Unofficial: it uses none of planetzoogame.com's logos or artwork, and every species links to
 its official Zoopedia page.
+
+## 0a. Version label (R1.0.1, CR-001)
+
+The masthead band shows the page's version first, then the species count and the export date
+of the Zoopedia data:
+
+`R1.0.1 · 136 species · data export 5 Oct 2026`
+
+The version comes from one constant, `VERSION`, in `src/template.html`; bump it with every
+release. Display only: no rule, filter or saved state reads it, and the plan file does not carry
+it.
 
 ## 1. Data sources and joins
 
@@ -293,8 +306,9 @@ refresh, and say in the change log which numbers moved and why.
 
 ## 10. Verification
 
-`npm test` builds the page and runs `tests/smoke.test.js` in jsdom: 12 tests that drive the UI
-and check known results from the current data — 136 species; 42 walk-through; 11 thriving
+`npm test` builds the page and runs `tests/smoke.test.js` in jsdom: 13 tests that drive the UI
+and check known results from the current data — the masthead version label (§0a); 136
+species; 42 walk-through; 11 thriving
 partners for Blue Wildebeest; 65 species at Franchise Tier 2 (71 hidden) and 126 at Tier 4;
 Career Tier 1 includes Lion and not Black Wildebeest; Great Rift Valley starts at 19 ready /
 8 waiting with the Lion waiting until Blue Wildebeest, Black Rhinoceros and Secretarybird are
@@ -328,3 +342,4 @@ Published artifact versions, all now **R1.0.0**:
 | Version | Change |
 |---|---|
 | R1.0.0 | 21 Oct 2026. Baseline = published artifact version 9, imported unchanged (tag `archive/claude-chat-handover`). Verified in this repo: `npm run build` reproduces `dist/zoopedia-finder.html` byte for byte, the file equals the live artifact apart from the host's wrapper, and the 12 smoke tests pass. No version label in the page yet. |
+| R1.0.1 | 21 Oct 2026, **CR-001**. Version label in the masthead (§0a): the band reads `R1.0.1 · 136 species · data export 5 Oct 2026`, from a single `VERSION` constant. Display only; no rule, data or saved state changes. Smoke suite 12 → 13 tests. Not yet released (waiting for Paul's approval and an artifact republish). |

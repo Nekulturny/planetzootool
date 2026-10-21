@@ -1138,10 +1138,11 @@ document.addEventListener("click", e => {
 });
 
 /* meta */
+const VERSION = "R1.0.1"; // CR-001: version label in the masthead; bump with every release
 const exp = new Date(DATA.exported);
 const lastReveal = A.map(a => a.reveal).sort().pop();
 const dfmt = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-$("bandMeta").textContent = `${A.length} species · data export ${dfmt(exp)}`;
+$("bandMeta").textContent = `${VERSION} · ${A.length} species · data export ${dfmt(exp)}`;
 $("footMeta").textContent = `Source export dated ${dfmt(exp)}, covering reveals up to ${dfmt(lastReveal + "T00:00:00Z")}. ${A.filter(a => a.walk).length} species allow guests to walk through; ${A.filter(a => a._compat).length} have at least one compatible partner.`;
 render();
 setView(location.hash === "#reserves" ? "reserves" : location.hash === "#species" ? "species" : rv.view);

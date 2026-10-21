@@ -20,7 +20,7 @@ npm install    # once: installs jsdom for the tests
 npm test       # rebuilds dist/zoopedia-finder.html, then runs the smoke tests
 ```
 
-Expected: `wrote dist/zoopedia-finder.html (… bytes, 136 species)`, then `12 tests passed`.
+Expected: `wrote dist/zoopedia-finder.html (… bytes, 136 species)`, then `13 tests passed`.
 
 ## Data
 
